@@ -77,9 +77,9 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-	#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 		layer = [GDTAppDelegateService.viewController.godotView initializeRenderingForDriver:@"vulkan"];
-	#endif
+#endif
 		if (!layer) {
 			ERR_FAIL_MSG("Failed to create iOS Vulkan rendering layer.");
 		}
@@ -90,9 +90,9 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 #ifdef METAL_ENABLED
 	if (rendering_driver == "metal") {
 		if (@available(iOS 14.0, *)) {
-		#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 			layer = [GDTAppDelegateService.viewController.godotView initializeRenderingForDriver:@"metal"];
-		#endif
+#endif
 			apple_surface = RenderingNativeSurfaceApple::create((__bridge void *)layer);
 			rendering_context = apple_surface->create_rendering_context(rendering_driver);
 		} else {
@@ -154,9 +154,9 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
 		CALayer<GDTDisplayLayer> *layer = nullptr;
-	#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 		layer = [GDTAppDelegateService.viewController.godotView initializeRenderingForDriver:@"opengl3"];
-	#endif
+#endif
 
 		if (!layer) {
 			ERR_FAIL_MSG("Failed to create iOS OpenGLES rendering layer.");

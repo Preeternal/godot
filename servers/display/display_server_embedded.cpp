@@ -642,7 +642,6 @@ void DisplayServerEmbedded::_detach_native_surface_on_render_thread(int64_t p_id
 		surface_detach_error = OK;
 	}
 #endif
-
 }
 
 int64_t DisplayServerEmbedded::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {

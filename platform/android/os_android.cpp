@@ -61,8 +61,8 @@
 #include "editor/run/game_view_plugin.h"
 #endif
 
-#include <dlfcn.h>
 #include <android/native_window.h>
+#include <dlfcn.h>
 #include <sys/system_properties.h>
 
 const char *OS_Android::ANDROID_EXEC_PATH = "apk";

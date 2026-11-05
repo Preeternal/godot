@@ -782,19 +782,19 @@ void OS_AppleEmbedded::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
 
-		#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
-		#endif
+#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 		}
 
-		#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 		[GDTAppDelegateService.viewController.godotView stopRendering];
-		#endif
+#endif
 
 		audio_driver.stop();
 	}
@@ -804,19 +804,19 @@ void OS_AppleEmbedded::on_focus_in() {
 	if (!is_focused) {
 		is_focused = true;
 
-		#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
-		#endif
+#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 		}
 
-		#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 		[GDTAppDelegateService.viewController.godotView startRendering];
-		#endif
+#endif
 
 		audio_driver.start();
 	}
@@ -825,7 +825,7 @@ void OS_AppleEmbedded::on_focus_in() {
 void OS_AppleEmbedded::on_enter_background() {
 	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
 
-	#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 	CameraServer *camera_server = CameraServer::get_singleton();
 	if (camera_server) {
 		camera_server->handle_application_pause();
@@ -834,7 +834,7 @@ void OS_AppleEmbedded::on_enter_background() {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
-	#endif
+#endif
 
 	on_focus_out();
 }
@@ -843,7 +843,7 @@ void OS_AppleEmbedded::on_exit_background() {
 	if (!is_focused) {
 		on_focus_in();
 
-		#ifndef LIBGODOT_ENABLED
+#ifndef LIBGODOT_ENABLED
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 		}
@@ -852,7 +852,7 @@ void OS_AppleEmbedded::on_exit_background() {
 		if (camera_server) {
 			camera_server->handle_application_resume();
 		}
-		#endif
+#endif
 	}
 }
 

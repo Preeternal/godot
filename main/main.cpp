@@ -36,9 +36,9 @@
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"
+#include "core/extension/gdextension.h"
 #include "core/extension/gdextension_interface_dump.gen.h"
 #include "core/extension/gdextension_interface_header_generator.h"
-#include "core/extension/gdextension.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
@@ -5393,8 +5393,8 @@ void Main::cleanup(bool p_force) {
 
 #ifndef XR_DISABLED
 	if (xr_server) {
-	memdelete(xr_server);
-	xr_server = nullptr;
+		memdelete(xr_server);
+		xr_server = nullptr;
 	}
 #endif // XR_DISABLED
 

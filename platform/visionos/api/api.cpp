@@ -30,7 +30,6 @@
 
 #include "api.h"
 
-
 #if defined(VISIONOS_ENABLED)
 
 void register_visionos_api() {

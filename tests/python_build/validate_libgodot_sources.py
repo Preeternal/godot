@@ -1,15 +1,14 @@
-#!/usr/bin/env python3
 """Check LibGodot source selection without running SCons, compilers or generators."""
 
 import ast
-from pathlib import Path
 import unittest
-
+from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-class SourceEnvironment(dict):
+class SourceEnvironment(dict[str, Any]):
     def __init__(self, directory, library_type, rendering_device=True):
         super().__init__(
             library_type=library_type,
@@ -77,23 +76,32 @@ def collect(script, library_type, rendering_device=True):
         # The 4.7 helper configures builders; it returns no module objects.
         return None
 
-    exec(compile(tree, str(path), "exec"), {
-        "env": env,
-        "Import": lambda name: None,
-        "SConscript": sconscript,
-        "Glob": lambda pattern: list(path.parent.glob(pattern)),
-        "Dir": lambda name: type("Directory", (), {"abspath": str(path.parent)})(),
-        "setup_swift_builder": swift_builder,
-        "combine_libs_apple_embedded": lambda: None,
-        "generate_bundle": lambda: None,
-    })
+    exec(
+        compile(tree, str(path), "exec"),
+        {
+            "env": env,
+            "Import": lambda name: None,
+            "SConscript": sconscript,
+            "Glob": lambda pattern: list(path.parent.glob(pattern)),
+            "Dir": lambda name: type("Directory", (), {"abspath": str(path.parent)})(),
+            "setup_swift_builder": swift_builder,
+            "combine_libs_apple_embedded": lambda: None,
+            "generate_bundle": lambda: None,
+        },
+    )
     return env
 
 
 class LibGodotSources(unittest.TestCase):
     def test_rendering_sources(self):
-        device_sources = {"rendering_device.cpp", "rendering_device_binds.cpp", "rendering_device_commons.cpp",
-                          "rendering_device_driver.cpp", "rendering_device_graph.cpp", "rendering_shader_container.cpp"}
+        device_sources = {
+            "rendering_device.cpp",
+            "rendering_device_binds.cpp",
+            "rendering_device_commons.cpp",
+            "rendering_device_driver.cpp",
+            "rendering_device_graph.cpp",
+            "rendering_shader_container.cpp",
+        }
         for rd in (False, True):
             env = collect("servers/rendering/SCsub", "static_library", rd)
             expected = set((ROOT / "servers/rendering").glob("*.cpp"))
