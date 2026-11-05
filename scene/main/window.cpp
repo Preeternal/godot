@@ -695,6 +695,18 @@ bool Window::is_in_edited_scene_root() const {
 
 void Window::_make_window() {
 	ERR_FAIL_COND(window_id != DisplayServerEnums::INVALID_WINDOW_ID);
+	if (native_surface != nullptr) {
+		window_id = DisplayServer::get_singleton()->create_native_window(native_surface);
+		ERR_FAIL_COND(window_id == DisplayServerEnums::INVALID_WINDOW_ID);
+
+		_update_window_size();
+
+		_update_window_callbacks();
+
+		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
+		RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
+		return;
+	}
 
 	if (transient && transient_to_focused) {
 		_make_transient();
@@ -759,6 +771,15 @@ void Window::_update_from_window() {
 
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServerEnums::INVALID_WINDOW_ID);
+	if (native_surface.is_valid() || DisplayServer::get_singleton()->is_native_window(window_id)) {
+		DisplayServerEnums::WindowID old_window_id = window_id;
+		DisplayServer::get_singleton()->delete_native_window(window_id);
+		ERR_FAIL_COND(DisplayServer::get_singleton()->is_native_window(old_window_id));
+		window_id = DisplayServerEnums::INVALID_WINDOW_ID;
+
+		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
+		return;
+	}
 
 	bool had_focus = has_focus();
 
@@ -1005,6 +1026,11 @@ void Window::_accessibility_notify_exit(Node *p_node) {
 
 void Window::set_visible(bool p_visible) {
 	ERR_MAIN_THREAD_GUARD;
+	if (native_surface.is_valid()) {
+		visible = true;
+		return;
+	}
+
 	if (visible == p_visible) {
 		return;
 	}
@@ -1107,6 +1133,35 @@ void Window::_clear_transient() {
 		}
 		transient_parent = nullptr;
 	}
+}
+
+void Window::set_native_surface(Ref<RenderingNativeSurface> p_native_surface) {
+	ERR_MAIN_THREAD_GUARD;
+	Ref<RenderingNativeSurface> new_native_handle = p_native_surface;
+	if (new_native_handle == native_surface) {
+		return;
+	}
+	if (!initialized) {
+		native_surface = new_native_handle;
+		return;
+	}
+	if (embedder) {
+		embedder->_sub_window_remove(this);
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+		_clear_window();
+		ERR_FAIL_COND(window_id != DisplayServerEnums::INVALID_WINDOW_ID);
+	}
+	native_surface = new_native_handle;
+	embedder = get_embedder();
+	if (embedder) {
+		embedder->_sub_window_register(this);
+	} else {
+		_make_window();
+	}
+}
+
+Ref<RenderingNativeSurface> Window::get_native_surface() {
+	return native_surface;
 }
 
 void Window::_make_transient() {
@@ -1447,11 +1502,25 @@ void Window::_update_viewport_size() {
 }
 
 void Window::_update_window_callbacks() {
+	DisplayServer::get_singleton()->window_set_native_surface_detach_callback(callable_mp(this, &Window::_native_surface_detach), window_id);
 	DisplayServer::get_singleton()->window_set_rect_changed_callback(callable_mp(this, &Window::_rect_changed_callback), window_id);
 	DisplayServer::get_singleton()->window_set_window_event_callback(callable_mp(this, &Window::_event_callback), window_id);
 	DisplayServer::get_singleton()->window_set_input_event_callback(callable_mp(this, &Window::_window_input), window_id);
 	DisplayServer::get_singleton()->window_set_input_text_callback(callable_mp(this, &Window::_window_input_text), window_id);
 	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
+}
+
+bool Window::_native_surface_detach(bool p_complete) {
+	ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+	if (p_complete) {
+		native_surface.unref();
+		window_id = DisplayServerEnums::INVALID_WINDOW_ID;
+	} else {
+		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
+		RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		RS::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServerEnums::INVALID_WINDOW_ID);
+	}
+	return true;
 }
 
 void Window::set_force_native(bool p_force_native) {
@@ -1477,6 +1546,10 @@ bool Window::get_force_native() const {
 Viewport *Window::get_embedder() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
+		return nullptr;
+	}
+
+	if (native_surface != nullptr) {
 		return nullptr;
 	}
 
@@ -3409,6 +3482,9 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &Window::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &Window::is_visible);
+
+	ClassDB::bind_method(D_METHOD("set_native_surface", "native_surface"), &Window::set_native_surface);
+	ClassDB::bind_method(D_METHOD("get_native_surface"), &Window::get_native_surface);
 
 	ClassDB::bind_method(D_METHOD("hide"), &Window::hide);
 	ClassDB::bind_method(D_METHOD("show"), &Window::show);

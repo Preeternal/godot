@@ -37,6 +37,7 @@ class GodotInstance : public Object {
 	GDCLASS(GodotInstance, Object);
 
 	bool started = false;
+	bool start_attempted = false;
 
 protected:
 	static void _bind_methods();

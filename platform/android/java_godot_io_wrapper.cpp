@@ -44,33 +44,92 @@
 GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance) {
 	godot_io_instance = p_env->NewGlobalRef(p_godot_io_instance);
 	if (godot_io_instance) {
-		cls = p_env->GetObjectClass(godot_io_instance);
-		if (cls) {
-			cls = (jclass)p_env->NewGlobalRef(cls);
-		} else {
-			// this is a pretty serious fail.. bail... pointers will stay 0
+		jclass local_class = p_env->GetObjectClass(godot_io_instance);
+		if (!local_class || p_env->ExceptionCheck()) {
+			return;
+		}
+		cls = (jclass)p_env->NewGlobalRef(local_class);
+		p_env->DeleteLocalRef(local_class);
+		if (!cls || p_env->ExceptionCheck()) {
 			return;
 		}
 
 		_open_URI = p_env->GetMethodID(cls, "openURI", "(Ljava/lang/String;)I");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_cache_dir = p_env->GetMethodID(cls, "getCacheDir", "()Ljava/lang/String;");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_temp_dir = p_env->GetMethodID(cls, "getTempDir", "()Ljava/lang/String;");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_data_dir = p_env->GetMethodID(cls, "getDataDir", "()Ljava/lang/String;");
-		_get_display_cutouts = p_env->GetMethodID(cls, "getDisplayCutouts", "()[I"),
-		_get_display_safe_area = p_env->GetMethodID(cls, "getDisplaySafeArea", "()[I"),
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
+		_get_display_cutouts = p_env->GetMethodID(cls, "getDisplayCutouts", "()[I");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
+		_get_display_safe_area = p_env->GetMethodID(cls, "getDisplaySafeArea", "()[I");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_scaled_density = p_env->GetMethodID(cls, "getScaledDensity", "()F");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_screen_refresh_rate = p_env->GetMethodID(cls, "getScreenRefreshRate", "(D)D");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;IIII)V");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_has_hardware_keyboard = p_env->GetMethodID(cls, "hasHardwareKeyboard", "()Z");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(IZ)Ljava/lang/String;");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 		_get_display_rotation = p_env->GetMethodID(cls, "getDisplayRotation", "()I");
+		if (p_env->ExceptionCheck()) {
+			return;
+		}
 	}
 }
 

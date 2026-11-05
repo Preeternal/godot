@@ -178,6 +178,9 @@ FileAccessAndroid::~FileAccessAndroid() {
 void FileAccessAndroid::setup(jobject p_asset_manager) {
 	JNIEnv *env = get_jni_env();
 	j_asset_manager = env->NewGlobalRef(p_asset_manager);
+	if (!j_asset_manager || env->ExceptionCheck()) {
+		return;
+	}
 	asset_manager = AAssetManager_fromJava(env, j_asset_manager);
 }
 
@@ -186,4 +189,6 @@ void FileAccessAndroid::terminate() {
 	ERR_FAIL_NULL(env);
 
 	env->DeleteGlobalRef(j_asset_manager);
+	j_asset_manager = nullptr;
+	asset_manager = nullptr;
 }

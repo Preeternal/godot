@@ -306,23 +306,72 @@ uint64_t DirAccessJAndroid::get_space_left() {
 void DirAccessJAndroid::setup(jobject p_dir_access_handler) {
 	JNIEnv *env = get_jni_env();
 	dir_access_handler = env->NewGlobalRef(p_dir_access_handler);
+	if (!dir_access_handler || env->ExceptionCheck()) {
+		return;
+	}
 
 	jclass c = env->GetObjectClass(dir_access_handler);
+	if (!c || env->ExceptionCheck()) {
+		return;
+	}
 	cls = (jclass)env->NewGlobalRef(c);
+	env->DeleteLocalRef(c);
+	if (!cls || env->ExceptionCheck()) {
+		return;
+	}
 
 	_dir_open = env->GetMethodID(cls, "dirOpen", "(ILjava/lang/String;)I");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_dir_next = env->GetMethodID(cls, "dirNext", "(I)Ljava/lang/String;");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_dir_close = env->GetMethodID(cls, "dirClose", "(I)V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_dir_is_dir = env->GetMethodID(cls, "dirIsDir", "(I)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_dir_exists = env->GetMethodID(cls, "dirExists", "(ILjava/lang/String;)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_exists = env->GetMethodID(cls, "fileExists", "(ILjava/lang/String;)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_get_drive_count = env->GetMethodID(cls, "getDriveCount", "(I)I");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_get_drive = env->GetMethodID(cls, "getDrive", "(II)Ljava/lang/String;");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_make_dir = env->GetMethodID(cls, "makeDir", "(ILjava/lang/String;)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_get_space_left = env->GetMethodID(cls, "getSpaceLeft", "(I)J");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_rename = env->GetMethodID(cls, "rename", "(ILjava/lang/String;Ljava/lang/String;)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_remove = env->GetMethodID(cls, "remove", "(ILjava/lang/String;)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_current_is_hidden = env->GetMethodID(cls, "isCurrentHidden", "(I)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 }
 
 void DirAccessJAndroid::terminate() {
@@ -331,6 +380,21 @@ void DirAccessJAndroid::terminate() {
 
 	env->DeleteGlobalRef(cls);
 	env->DeleteGlobalRef(dir_access_handler);
+	cls = nullptr;
+	dir_access_handler = nullptr;
+	_dir_open = nullptr;
+	_dir_next = nullptr;
+	_dir_close = nullptr;
+	_dir_is_dir = nullptr;
+	_dir_exists = nullptr;
+	_file_exists = nullptr;
+	_get_drive_count = nullptr;
+	_get_drive = nullptr;
+	_make_dir = nullptr;
+	_get_space_left = nullptr;
+	_rename = nullptr;
+	_remove = nullptr;
+	_current_is_hidden = nullptr;
 }
 
 DirAccessJAndroid::DirAccessJAndroid() {

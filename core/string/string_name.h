@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include "core/os/mutex.h"
 #include "core/string/ustring.h"
+#include "core/templates/paged_allocator.h"
 #include "core/templates/safe_refcount.h"
 
 #define UNIQUE_NODE_PREFIX "%"
@@ -38,8 +40,6 @@
 class Main;
 
 class [[nodiscard]] StringName {
-	struct Table;
-
 	struct _Data {
 		SafeRefCount refcount;
 		SafeNumeric<uint32_t> static_count;
@@ -53,6 +53,21 @@ class [[nodiscard]] StringName {
 		_Data *next = nullptr;
 	};
 
+	struct Table {
+		constexpr static uint32_t TABLE_BITS = 16;
+		constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
+		constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
+
+		struct Allocator : public PagedAllocator<_Data> {
+			~Allocator();
+		};
+
+		static inline _Data *table[TABLE_LEN];
+		static inline BinaryMutex mutex;
+		static inline Allocator allocator;
+		static inline bool configured = false;
+	};
+
 	_Data *_data = nullptr;
 
 	void unref();
@@ -62,7 +77,6 @@ class [[nodiscard]] StringName {
 	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
-	static inline bool configured = false;
 #ifdef DEBUG_ENABLED
 	struct DebugSortReferences {
 		bool operator()(const _Data *p_left, const _Data *p_right) const {
@@ -178,7 +192,7 @@ public:
 	_FORCE_INLINE_
 #endif
 	~StringName() {
-		if (likely(configured) && _data) { //only free if configured
+		if (likely(Table::configured) && _data) { //only free if configured
 			unref();
 		}
 	}

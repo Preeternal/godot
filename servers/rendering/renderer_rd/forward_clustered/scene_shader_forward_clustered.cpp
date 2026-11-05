@@ -634,6 +634,10 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	material_storage->material_free(overdraw_material);
 	material_storage->material_free(default_material);
 	material_storage->material_free(debug_shadow_splits_material);
+
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 void SceneShaderForwardClustered::init(const String p_defines) {

@@ -40,15 +40,20 @@
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #import "drivers/apple/os_log_logger.h"
+#ifndef LIBGODOT_ENABLED
 #import "drivers/apple_embedded/app_delegate_service.h"
 #import "drivers/apple_embedded/display_server_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
+#endif
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 #include "main/main.h"
+#include "servers/audio/audio_driver.h"
 #include "servers/camera/camera_server.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server_embedded.h"
 
 #import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
@@ -193,11 +198,13 @@ void OS_AppleEmbedded::deinitialize_modules() {
 #ifdef SDL_ENABLED
 	if (joypad_sdl) {
 		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
 	}
 #endif
 
 	if (apple_embedded) {
 		memdelete(apple_embedded);
+		apple_embedded = nullptr;
 	}
 }
 
@@ -775,15 +782,19 @@ void OS_AppleEmbedded::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
 
+		#ifndef LIBGODOT_ENABLED
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
+		#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 		}
 
+		#ifndef LIBGODOT_ENABLED
 		[GDTAppDelegateService.viewController.godotView stopRendering];
+		#endif
 
 		audio_driver.stop();
 	}
@@ -793,15 +804,19 @@ void OS_AppleEmbedded::on_focus_in() {
 	if (!is_focused) {
 		is_focused = true;
 
+		#ifndef LIBGODOT_ENABLED
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
+		#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 		}
 
+		#ifndef LIBGODOT_ENABLED
 		[GDTAppDelegateService.viewController.godotView startRendering];
+		#endif
 
 		audio_driver.start();
 	}
@@ -810,6 +825,7 @@ void OS_AppleEmbedded::on_focus_in() {
 void OS_AppleEmbedded::on_enter_background() {
 	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
 
+	#ifndef LIBGODOT_ENABLED
 	CameraServer *camera_server = CameraServer::get_singleton();
 	if (camera_server) {
 		camera_server->handle_application_pause();
@@ -818,6 +834,7 @@ void OS_AppleEmbedded::on_enter_background() {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
+	#endif
 
 	on_focus_out();
 }
@@ -826,6 +843,7 @@ void OS_AppleEmbedded::on_exit_background() {
 	if (!is_focused) {
 		on_focus_in();
 
+		#ifndef LIBGODOT_ENABLED
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 		}
@@ -834,6 +852,7 @@ void OS_AppleEmbedded::on_exit_background() {
 		if (camera_server) {
 			camera_server->handle_application_resume();
 		}
+		#endif
 	}
 }
 

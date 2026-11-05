@@ -256,3 +256,17 @@ AudioStreamPreviewGenerator::AudioStreamPreviewGenerator() {
 	singleton = this;
 	set_process(true);
 }
+
+AudioStreamPreviewGenerator::~AudioStreamPreviewGenerator() {
+	for (KeyValue<ObjectID, Preview> &E : previews) {
+		if (E.value.thread) {
+			E.value.thread->wait_to_finish();
+			memdelete(E.value.thread);
+			E.value.thread = nullptr;
+		}
+	}
+	previews.clear();
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

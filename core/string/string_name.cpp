@@ -35,22 +35,32 @@
 #include "core/string/print_string.h"
 #include "core/templates/paged_allocator.h"
 
-struct StringName::Table {
-	constexpr static uint32_t TABLE_BITS = 16;
-	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
-	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
-
-	static inline _Data *table[TABLE_LEN];
-	static inline BinaryMutex mutex;
-	static inline PagedAllocator<_Data> allocator;
-};
+StringName::Table::Allocator::~Allocator() {
+#ifdef LIBGODOT_ENABLED
+	Table::configured = false;
+	MutexLock lock(Table::mutex);
+	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
+		while (Table::table[i]) {
+			_Data *d = Table::table[i];
+			Table::table[i] = d->next;
+			free(d);
+		}
+	}
+#endif
+}
 
 void StringName::setup() {
-	ERR_FAIL_COND(configured);
+#ifndef LIBGODOT_ENABLED
+	ERR_FAIL_COND(Table::configured);
+#else
+	if (Table::configured) {
+		return;
+	}
+#endif
 	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
 		Table::table[i] = nullptr;
 	}
-	configured = true;
+	Table::configured = true;
 }
 
 void StringName::cleanup() {
@@ -80,12 +90,17 @@ void StringName::cleanup() {
 			} else if (data[i]->debug_references < 5) {
 				rarely_referenced_stringnames += 1;
 			}
+			data[i]->debug_references = 0;
 		}
 
 		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data_size, unreferenced_stringnames, unreferenced_stringnames / float(data_size) * 100));
 		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data_size, rarely_referenced_stringnames, rarely_referenced_stringnames / float(data_size) * 100));
 	}
 #endif
+
+#ifdef LIBGODOT_ENABLED
+	return;
+#else
 	int lost_strings = 0;
 	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
 		while (Table::table[i]) {
@@ -105,18 +120,21 @@ void StringName::cleanup() {
 	if (lost_strings) {
 		print_verbose(vformat("StringName: %d unclaimed string names at exit.", lost_strings));
 	}
-	configured = false;
+	Table::configured = false;
+#endif
 }
 
 void StringName::unref() {
-	ERR_FAIL_COND(!configured);
+	ERR_FAIL_COND(!Table::configured);
 
 	if (_data && _data->refcount.unref()) {
 		MutexLock lock(Table::mutex);
 
+#ifndef LIBGODOT_ENABLED
 		if (CoreGlobals::leak_reporting_enabled && _data->static_count.get() > 0) {
 			ERR_PRINT("BUG: Unreferenced static string to 0: " + _data->name);
 		}
+#endif
 		if (_data->prev) {
 			_data->prev->next = _data->next;
 		} else {
@@ -196,7 +214,7 @@ StringName &StringName::operator=(const StringName &p_name) {
 StringName::StringName(const StringName &p_name) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	ERR_FAIL_COND(!Table::configured);
 
 	if (p_name._data && p_name._data->refcount.ref()) {
 		_data = p_name._data;
@@ -206,7 +224,7 @@ StringName::StringName(const StringName &p_name) {
 StringName::StringName(const char *p_name, bool p_static) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	ERR_FAIL_COND(!Table::configured);
 
 	if (!p_name || p_name[0] == 0) {
 		return; //empty, ignore
@@ -263,7 +281,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 StringName::StringName(const String &p_name, bool p_static) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	ERR_FAIL_COND(!Table::configured);
 
 	if (p_name.is_empty()) {
 		return;

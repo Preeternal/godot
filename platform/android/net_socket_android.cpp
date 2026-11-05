@@ -41,12 +41,28 @@ void NetSocketAndroid::setup(jobject p_net_utils) {
 	JNIEnv *env = get_jni_env();
 
 	net_utils = env->NewGlobalRef(p_net_utils);
+	if (!net_utils || env->ExceptionCheck()) {
+		return;
+	}
 
 	jclass c = env->GetObjectClass(net_utils);
+	if (!c || env->ExceptionCheck()) {
+		return;
+	}
 	cls = (jclass)env->NewGlobalRef(c);
+	env->DeleteLocalRef(c);
+	if (!cls || env->ExceptionCheck()) {
+		return;
+	}
 
 	_multicast_lock_acquire = env->GetMethodID(cls, "multicastLockAcquire", "()V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_multicast_lock_release = env->GetMethodID(cls, "multicastLockRelease", "()V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 }
 
 void NetSocketAndroid::terminate() {
@@ -55,6 +71,10 @@ void NetSocketAndroid::terminate() {
 
 	env->DeleteGlobalRef(cls);
 	env->DeleteGlobalRef(net_utils);
+	cls = nullptr;
+	net_utils = nullptr;
+	_multicast_lock_acquire = nullptr;
+	_multicast_lock_release = nullptr;
 }
 
 void NetSocketAndroid::multicast_lock_acquire() {

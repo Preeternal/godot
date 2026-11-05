@@ -311,5 +311,7 @@ ProgressDialog::ProgressDialog() {
 }
 
 ProgressDialog::~ProgressDialog() {
-	singleton = nullptr;
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }

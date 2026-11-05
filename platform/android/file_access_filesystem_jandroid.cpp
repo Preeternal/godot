@@ -347,26 +347,84 @@ int64_t FileAccessFilesystemJAndroid::_get_size(const String &p_file) {
 void FileAccessFilesystemJAndroid::setup(jobject p_file_access_handler) {
 	JNIEnv *env = get_jni_env();
 	file_access_handler = env->NewGlobalRef(p_file_access_handler);
+	if (!file_access_handler || env->ExceptionCheck()) {
+		return;
+	}
 
 	jclass c = env->GetObjectClass(file_access_handler);
+	if (!c || env->ExceptionCheck()) {
+		return;
+	}
 	cls = (jclass)env->NewGlobalRef(c);
+	env->DeleteLocalRef(c);
+	if (!cls || env->ExceptionCheck()) {
+		return;
+	}
 
 	_file_open = env->GetMethodID(cls, "fileOpen", "(Ljava/lang/String;I)I");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_get_size = env->GetMethodID(cls, "fileGetSize", "(I)J");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_tell = env->GetMethodID(cls, "fileGetPosition", "(I)J");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_eof = env->GetMethodID(cls, "isFileEof", "(I)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_set_eof = env->GetMethodID(cls, "setFileEof", "(IZ)V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_seek = env->GetMethodID(cls, "fileSeek", "(IJ)V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_seek_end = env->GetMethodID(cls, "fileSeekFromEnd", "(IJ)V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_read = env->GetMethodID(cls, "fileRead", "(ILjava/nio/ByteBuffer;)I");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_close = env->GetMethodID(cls, "fileClose", "(I)V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_write = env->GetMethodID(cls, "fileWrite", "(ILjava/nio/ByteBuffer;)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_flush = env->GetMethodID(cls, "fileFlush", "(I)V");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_exists = env->GetMethodID(cls, "fileExists", "(Ljava/lang/String;)Z");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_last_modified = env->GetMethodID(cls, "fileLastModified", "(Ljava/lang/String;)J");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_last_accessed = env->GetMethodID(cls, "fileLastAccessed", "(Ljava/lang/String;)J");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_resize = env->GetMethodID(cls, "fileResize", "(IJ)I");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 	_file_size = env->GetMethodID(cls, "fileSize", "(Ljava/lang/String;)J");
+	if (env->ExceptionCheck()) {
+		return;
+	}
 }
 
 void FileAccessFilesystemJAndroid::terminate() {
@@ -375,6 +433,24 @@ void FileAccessFilesystemJAndroid::terminate() {
 
 	env->DeleteGlobalRef(cls);
 	env->DeleteGlobalRef(file_access_handler);
+	cls = nullptr;
+	file_access_handler = nullptr;
+	_file_open = nullptr;
+	_file_get_size = nullptr;
+	_file_seek = nullptr;
+	_file_seek_end = nullptr;
+	_file_read = nullptr;
+	_file_tell = nullptr;
+	_file_eof = nullptr;
+	_file_set_eof = nullptr;
+	_file_close = nullptr;
+	_file_write = nullptr;
+	_file_flush = nullptr;
+	_file_exists = nullptr;
+	_file_last_modified = nullptr;
+	_file_last_accessed = nullptr;
+	_file_resize = nullptr;
+	_file_size = nullptr;
 }
 
 void FileAccessFilesystemJAndroid::close() {

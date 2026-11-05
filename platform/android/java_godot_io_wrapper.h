@@ -39,8 +39,8 @@
 // Class that makes functions in java/src/org/godotengine/godot/GodotIO.java callable from C++
 class GodotIOJavaWrapper {
 private:
-	jobject godot_io_instance;
-	jclass cls;
+	jobject godot_io_instance = nullptr;
+	jclass cls = nullptr;
 
 	jmethodID _open_URI = nullptr;
 	jmethodID _get_cache_dir = nullptr;

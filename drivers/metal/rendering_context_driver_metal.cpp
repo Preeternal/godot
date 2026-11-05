@@ -32,6 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/templates/sort_array.h"
+#include "drivers/apple/rendering_native_surface_apple.h"
 #include "drivers/metal/metal3_objects.h"
 #include "drivers/metal/metal_objects_shared.h"
 #include "drivers/metal/rendering_device_driver_metal3.h"
@@ -393,13 +394,15 @@ public:
 	}
 };
 
-RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(Ref<RenderingNativeSurface> p_native_surface) {
+	Ref<RenderingNativeSurfaceApple> apple_native_surface = Object::cast_to<RenderingNativeSurfaceApple>(*p_native_surface);
+	ERR_FAIL_COND_V(apple_native_surface.is_null(), SurfaceID());
+	CA::MetalLayer *layer = (CA::MetalLayer *)(void *)apple_native_surface->get_layer();
 	Surface *surface;
 	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_OFF_SCREEN"); v == U"1") {
-		surface = memnew(SurfaceOffscreen(wpd->layer, metal_device));
+		surface = memnew(SurfaceOffscreen(layer, metal_device));
 	} else {
-		surface = memnew(SurfaceLayer(wpd->layer, metal_device));
+		surface = memnew(SurfaceLayer(layer, metal_device));
 	}
 
 	return SurfaceID(surface);

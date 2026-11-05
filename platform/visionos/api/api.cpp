@@ -30,6 +30,7 @@
 
 #include "api.h"
 
+
 #if defined(VISIONOS_ENABLED)
 
 void register_visionos_api() {
@@ -46,3 +47,9 @@ void register_visionos_api() {}
 void unregister_visionos_api() {}
 
 #endif // VISIONOS_ENABLED
+
+void register_core_visionos_api() {
+}
+
+void unregister_core_visionos_api() {
+}

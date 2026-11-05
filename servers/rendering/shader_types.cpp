@@ -561,3 +561,9 @@ ShaderTypes::ShaderTypes() {
 		shader_types.insert(type);
 	}
 }
+
+ShaderTypes::~ShaderTypes() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

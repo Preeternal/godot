@@ -1161,3 +1161,9 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	set_custom_minimum_size(Size2(0, 150 * EDSCALE));
 }
+
+AnimationNodeBlendSpace1DEditor::~AnimationNodeBlendSpace1DEditor() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

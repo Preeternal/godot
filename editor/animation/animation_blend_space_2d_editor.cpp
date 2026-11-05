@@ -1476,3 +1476,9 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	dragging_selected_attempt = false;
 	dragging_blend_position = false;
 }
+
+AnimationNodeBlendSpace2DEditor::~AnimationNodeBlendSpace2DEditor() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
