@@ -9,10 +9,12 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class SourceEnvironment(dict[str, Any]):
-    def __init__(self, directory, library_type, rendering_device=True):
+    def __init__(self, directory, library_type, vulkan=True, metal=False, d3d12=False):
         super().__init__(
             library_type=library_type,
-            rendering_device=rendering_device,
+            vulkan=vulkan,
+            metal=metal,
+            d3d12=d3d12,
             APPLE_PLATFORM="ios",
             APPLE_SDK_PATH="unused",
             LIBSUFFIX=".a",
@@ -59,9 +61,9 @@ class SourceEnvironment(dict[str, Any]):
         return callback
 
 
-def collect(script, library_type, rendering_device=True):
+def collect(script, library_type, **drivers):
     path = ROOT / script
-    env = SourceEnvironment(path.parent, library_type, rendering_device)
+    env = SourceEnvironment(path.parent, library_type, **drivers)
     tree = ast.parse(path.read_text())
     # Execute only source-selection code with an inert SCons environment.
     tree.body = [n for n in tree.body if not isinstance(n, (ast.Import, ast.ImportFrom))]
@@ -94,20 +96,19 @@ def collect(script, library_type, rendering_device=True):
 
 class LibGodotSources(unittest.TestCase):
     def test_rendering_sources(self):
-        device_sources = {
-            "rendering_device.cpp",
-            "rendering_device_binds.cpp",
-            "rendering_device_commons.cpp",
-            "rendering_device_driver.cpp",
-            "rendering_device_graph.cpp",
-            "rendering_shader_container.cpp",
-        }
-        for rd in (False, True):
-            env = collect("servers/rendering/SCsub", "static_library", rd)
-            expected = set((ROOT / "servers/rendering").glob("*.cpp"))
-            if not rd:
-                expected = {p for p in expected if p.name not in device_sources}
-            self.assertEqual(set(env.sources), expected)
+        # 4.7 builds the RD sources regardless of enabled backend drivers.
+        # Do not supply the 4.8-only rendering_device environment key.
+        for vulkan in (False, True):
+            for metal in (False, True):
+                for d3d12 in (False, True):
+                    with self.subTest(vulkan=vulkan, metal=metal, d3d12=d3d12):
+                        env = collect(
+                            "servers/rendering/SCsub", "static_library", vulkan=vulkan, metal=metal, d3d12=d3d12
+                        )
+                        self.assertNotIn("rendering_device", env)
+                        expected = set((ROOT / "servers/rendering").glob("*.cpp"))
+                        self.assertEqual(set(env.sources), expected)
+                        self.assertIn(ROOT / "servers/rendering/renderer_rd/SCsub", env.scripts)
 
     def test_apple_library_and_executable(self):
         for kind in ("static_library", "shared_library", "executable"):
