@@ -200,7 +200,11 @@ def configure(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["IOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
     if env["metal"] and env["simulator"]:
-        print_warning("iOS Simulator does not support the Metal rendering driver")
+        # Simulator uses Compatibility; device builds keep the requested Metal driver.
+        print_warning(
+            "This Godot build disables Metal for iOS Simulator; "
+            "use --rendering-driver opengl3 --rendering-method gl_compatibility"
+        )
         env["metal"] = False
 
     if env["metal"]:
