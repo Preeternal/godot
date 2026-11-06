@@ -481,6 +481,10 @@ Files extracted from upstream source:
   - All the `.cc`, `.h`, `.hh` files
   - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-gpu*.*`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
 
+Godot patches:
+
+- `patches/0001-coverage-range-array-view.patch`: Access CoverageFormat2 ranges through the existing length-checked array view instead of indexing the fixed-size trailing member.
+
 
 ## icu4c
 

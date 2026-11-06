@@ -1,0 +1,29 @@
+diff --git a/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh b/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh
+index 19895cabb8..5bdd05518a 100644
+--- a/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh
++++ b/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh
+@@ -104,10 +104,10 @@ struct CoverageFormat2_4
+ 	  unsorted = true;
+ 
+         range++;
+-        rangeRecord.arrayZ[range].first = g;
+-        rangeRecord.arrayZ[range].value = count;
++        rangeRecord.as_array ()[range].first = g;
++        rangeRecord.as_array ()[range].value = count;
+       }
+-      rangeRecord.arrayZ[range].last = g;
++      rangeRecord.as_array ()[range].last = g;
+       last = g;
+       count++;
+     }
+@@ -194,8 +194,8 @@ struct CoverageFormat2_4
+         if (__more__ ())
+         {
+           unsigned int old = coverage;
+-          j = c->rangeRecord.arrayZ[i].first;
+-          coverage = c->rangeRecord.arrayZ[i].value;
++          j = c->rangeRecord.as_array ()[i].first;
++          coverage = c->rangeRecord.as_array ()[i].value;
+           if (unlikely (coverage != old + 1))
+           {
+             /* Broken table. Skip. Important to avoid DoS.

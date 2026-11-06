@@ -104,10 +104,10 @@ struct CoverageFormat2_4
 	  unsorted = true;
 
         range++;
-        rangeRecord.arrayZ[range].first = g;
-        rangeRecord.arrayZ[range].value = count;
+        rangeRecord.as_array ()[range].first = g;
+        rangeRecord.as_array ()[range].value = count;
       }
-      rangeRecord.arrayZ[range].last = g;
+      rangeRecord.as_array ()[range].last = g;
       last = g;
       count++;
     }
@@ -194,8 +194,8 @@ struct CoverageFormat2_4
         if (__more__ ())
         {
           unsigned int old = coverage;
-          j = c->rangeRecord.arrayZ[i].first;
-          coverage = c->rangeRecord.arrayZ[i].value;
+          j = c->rangeRecord.as_array ()[i].first;
+          coverage = c->rangeRecord.as_array ()[i].value;
           if (unlikely (coverage != old + 1))
           {
             /* Broken table. Skip. Important to avoid DoS.
