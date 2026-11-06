@@ -13,7 +13,7 @@
 			<return type="RenderingNativeSurfaceApple" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns a wrapper for the native layer pointer encoded in [param layer]. A zero pointer requests a new layer.
+				Returns a wrapper for the native layer pointer encoded in [param layer]. A zero pointer requests a new layer. Returns [code]null[/code] on platforms without an Apple native surface implementation.
 			</description>
 		</method>
 		<method name="get_layer">

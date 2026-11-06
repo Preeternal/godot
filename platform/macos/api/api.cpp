@@ -30,14 +30,49 @@
 
 #include "api.h"
 
-#ifdef MACOS_ENABLED
 #include "core/object/class_db.h"
 #include "drivers/apple/rendering_native_surface_apple.h"
 
+#if !defined(MACOS_ENABLED) && !defined(IOS_ENABLED) && !defined(VISIONOS_ENABLED)
+// Match the Android API stub: expose cross-platform metadata without native UI.
+void RenderingNativeSurfaceApple::_bind_methods() {
+	ClassDB::bind_static_method("RenderingNativeSurfaceApple", D_METHOD("create", "layer"), &RenderingNativeSurfaceApple::create_api);
+	ClassDB::bind_method(D_METHOD("get_layer"), &RenderingNativeSurfaceApple::get_layer);
+}
+
+Ref<RenderingNativeSurfaceApple> RenderingNativeSurfaceApple::create_api(uint64_t p_layer) {
+	return nullptr;
+}
+
+Ref<RenderingNativeSurfaceApple> RenderingNativeSurfaceApple::create(void *p_layer) {
+	return nullptr;
+}
+
+uint64_t RenderingNativeSurfaceApple::get_layer() {
+	return 0;
+}
+
+RenderingContextDriver *RenderingNativeSurfaceApple::create_rendering_context(const String &p_driver_name) {
+	return nullptr;
+}
+
+GLManager *RenderingNativeSurfaceApple::create_gl_manager(const String &p_driver_name) {
+	return nullptr;
+}
+
+void *RenderingNativeSurfaceApple::get_native_id() const {
+	return nullptr;
+}
+
+RenderingNativeSurfaceApple::RenderingNativeSurfaceApple() {
+}
+
+RenderingNativeSurfaceApple::~RenderingNativeSurfaceApple() {
+}
 #endif
 
 void register_core_macos_api() {
-#ifdef MACOS_ENABLED
+#if !defined(IOS_ENABLED) && !defined(VISIONOS_ENABLED)
 	GDREGISTER_ABSTRACT_CLASS(RenderingNativeSurfaceApple);
 #endif
 }

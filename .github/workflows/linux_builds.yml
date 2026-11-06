@@ -50,12 +50,13 @@ jobs:
             cache-name: linux-editor-double-sanitizers
             target: editor
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
-            # Use -Og to keep the instrumented image within x86_64 PC-relative relocation range.
+            # GCC's instrumented image can exceed the x86_64 PC-relative relocation range.
+            # Keep all sanitizer coverage, but optimize this large double/SCU build for size.
             scons-flags: >-
               dev_build=yes
               scu_build=yes
               debug_symbols=no
-              optimize=debug
+              optimize=size
               precision=double
               use_asan=yes
               use_ubsan=yes
