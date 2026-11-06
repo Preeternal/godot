@@ -112,7 +112,8 @@ enum InlineAlignment {
 	INLINE_ALIGNMENT_BOTTOM = INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM
 };
 
-enum Side {
+// A fixed underlying type also permits validating out-of-range values at API boundaries.
+enum Side : uint32_t {
 	SIDE_LEFT,
 	SIDE_TOP,
 	SIDE_RIGHT,

@@ -75,7 +75,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		uint8_t *write_buffer = data_w;
 
 		const uint32_t width_bytes = (width * bits_per_pixel + 7) / 8;
-		const uint32_t line_width = (width_bytes + 3) & ~3; // Padded to 4 bytes.
+		const uint32_t line_width = (width_bytes + 3u) & ~3u; // Padded to 4 bytes.
 
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
 		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;

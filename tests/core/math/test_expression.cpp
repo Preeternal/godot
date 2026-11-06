@@ -36,6 +36,41 @@ TEST_FORCE_LINK(test_expression)
 
 namespace TestExpression {
 
+TEST_CASE("[Expression] Floating division preserves IEEE zero-divisor results") {
+	struct DivisionCase {
+		double left;
+		double right;
+		double expected;
+	};
+	const DivisionCase cases[] = {
+		{ 1.0, 0.0, Math::INF },
+		{ -1.0, 0.0, -Math::INF },
+		{ 1.0, -0.0, -Math::INF },
+		{ -1.0, -0.0, Math::INF },
+		{ 0.0, 0.0, Math::NaN },
+		{ Math::NaN, 0.0, Math::NaN },
+		{ Math::INF, 0.0, Math::INF },
+		{ 6.0, 2.0, 3.0 },
+	};
+	for (const DivisionCase &division : cases) {
+		Variant left = division.left;
+		Variant right = division.right;
+		Variant result;
+		bool valid = false;
+		Variant::evaluate(Variant::OP_DIVIDE, left, right, result, valid);
+		CHECK(valid);
+		CHECK(Math::is_same(double(result), division.expected));
+
+		result = 0.0;
+		Variant::get_validated_operator_evaluator(Variant::OP_DIVIDE, Variant::FLOAT, Variant::FLOAT)(&left, &right, &result);
+		CHECK(Math::is_same(double(result), division.expected));
+
+		double ptr_result = 0.0;
+		Variant::get_ptr_operator_evaluator(Variant::OP_DIVIDE, Variant::FLOAT, Variant::FLOAT)(&division.left, &division.right, &ptr_result);
+		CHECK(Math::is_same(ptr_result, division.expected));
+	}
+}
+
 TEST_CASE("[Expression] Integer arithmetic") {
 	Expression expression;
 

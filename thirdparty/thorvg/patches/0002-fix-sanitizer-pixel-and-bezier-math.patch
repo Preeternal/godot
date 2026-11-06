@@ -1,0 +1,68 @@
+diff --git a/thirdparty/thorvg/src/common/tvgMath.cpp b/thirdparty/thorvg/src/common/tvgMath.cpp
+index a919efabed..abb0a88caa 100644
+--- a/thirdparty/thorvg/src/common/tvgMath.cpp
++++ b/thirdparty/thorvg/src/common/tvgMath.cpp
+@@ -450,7 +450,15 @@ void Bezier::bounds(BBox& box, const Point& start, const Point& ctrl1, const Poi
+         auto h = b * b - a * c;
+         if (h <= 0.0f) return;
+         h = sqrtf(h);
+-        float t[2] = {(-b - h) / a, (-b + h) / a};
++        float t[2];
++        if (a == 0.0f) {
++            // The derivative is linear when the cubic coefficient vanishes.
++            if (b == 0.0f) return;
++            t[0] = t[1] = -c / (2.0f * b);
++        } else {
++            t[0] = (-b - h) / a;
++            t[1] = (-b + h) / a;
++        }
+         for (int i = 0; i < 2; ++i) {
+             if (t[i] <= 0.0f || t[i] >= 1.0f) continue;
+             auto s = 1.0f - t[i];
+diff --git a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwCommon.h b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwCommon.h
+index 0875c40b07..dbc9c61827 100644
+--- a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwCommon.h
++++ b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwCommon.h
+@@ -395,7 +395,7 @@ static inline int32_t TO_SWCOORD(float val)
+ 
+ static inline uint32_t JOIN(uint8_t c0, uint8_t c1, uint8_t c2, uint8_t c3)
+ {
+-    return (c0 << 24 | c1 << 16 | c2 << 8 | c3);
++    return (uint32_t(c0) << 24 | uint32_t(c1) << 16 | uint32_t(c2) << 8 | uint32_t(c3));
+ }
+ 
+ static inline uint32_t ALPHA_BLEND(uint32_t c, uint32_t a)
+diff --git a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwRaster.cpp b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwRaster.cpp
+index 63c965625e..1b571114de 100644
+--- a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwRaster.cpp
++++ b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwRaster.cpp
+@@ -116,25 +116,25 @@ static inline uint8_t _argbLuma(uint8_t* c)
+ 
+ static inline uint8_t _abgrInvLuma(uint8_t* c)
+ {
+-    return ~_abgrLuma(c);
++    return uint8_t(~_abgrLuma(c));
+ }
+ 
+ 
+ static inline uint8_t _argbInvLuma(uint8_t* c)
+ {
+-    return ~_argbLuma(c);
++    return uint8_t(~_argbLuma(c));
+ }
+ 
+ 
+ static inline uint32_t _abgrJoin(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+ {
+-    return (a << 24 | b << 16 | g << 8 | r);
++    return (uint32_t(a) << 24 | uint32_t(b) << 16 | uint32_t(g) << 8 | uint32_t(r));
+ }
+ 
+ 
+ static inline uint32_t _argbJoin(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+ {
+-    return (a << 24 | r << 16 | g << 8 | b);
++    return (uint32_t(a) << 24 | uint32_t(r) << 16 | uint32_t(g) << 8 | uint32_t(b));
+ }
+ 
+ static inline bool _blending(const SwSurface* surface)

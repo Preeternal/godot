@@ -514,7 +514,9 @@ Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, const Vector<uint8_
 	int ret = mbedtls_pk_encrypt(&(key->pkey), p_plaintext.ptr(), p_plaintext.size(), buf, &size, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while encrypting: " + itos(ret));
 	out.resize(size);
-	memcpy(out.ptrw(), buf, size);
+	if (size > 0) {
+		memcpy(out.ptrw(), buf, size);
+	}
 	return out;
 }
 
@@ -528,6 +530,8 @@ Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, const Vector<uint8_
 	int ret = mbedtls_pk_decrypt(&(key->pkey), p_ciphertext.ptr(), p_ciphertext.size(), buf, &size, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while decrypting: " + itos(ret));
 	out.resize(size);
-	memcpy(out.ptrw(), buf, size);
+	if (size > 0) {
+		memcpy(out.ptrw(), buf, size);
+	}
 	return out;
 }

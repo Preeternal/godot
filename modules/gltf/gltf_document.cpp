@@ -6793,13 +6793,13 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		String json_string = JSON::stringify(p_state->json, "", true, true);
 		CharString cs = json_string.utf8();
 		uint64_t text_data_length = cs.length();
-		uint64_t text_chunk_length = ((text_data_length + 3) & (~3));
+		uint64_t text_chunk_length = ((text_data_length + 3) & (~uint64_t(3)));
 		uint64_t total_file_length = header_size + chunk_header_size + text_chunk_length;
 		uint64_t binary_data_length = 0;
 		uint64_t binary_chunk_length = 0;
 		if (p_state->buffers.size() > 0) {
 			binary_data_length = p_state->buffers[0].size();
-			binary_chunk_length = ((binary_data_length + 3) & (~3));
+			binary_chunk_length = ((binary_data_length + 3) & (~uint64_t(3)));
 			const uint64_t file_length_with_buffer = total_file_length + chunk_header_size + binary_chunk_length;
 			// Check if the file length with the buffer is greater than glTF's maximum of 4 GiB.
 			// If it is, we can't write the buffer into the file, but can write it separately.

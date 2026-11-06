@@ -1097,6 +1097,8 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-let-delete-be-delete.patch` ([GH-116024](https://github.com/godotengine/godot/pull/116024))
+- `0002-fix-sanitizer-pixel-and-bezier-math.patch`: use unsigned channel packing
+  and handle the linear derivative of a degenerate cubic without dividing by zero.
 
 
 ## tinyexr

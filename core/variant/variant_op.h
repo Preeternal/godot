@@ -35,6 +35,9 @@
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
+#include <cmath>
+#include <type_traits>
+
 template <typename Evaluator>
 class CommonEvaluate {
 public:
@@ -120,12 +123,26 @@ public:
 
 template <typename R, typename A, typename B>
 class OperatorEvaluatorDiv : public CommonEvaluate<OperatorEvaluatorDiv<R, A, B>> {
+	static inline R divide(const A &p_left, const B &p_right) {
+		if constexpr (std::is_floating_point_v<R>) {
+			// Scalar floating-point division accepts zero divisors. Produce its
+			// IEEE result explicitly, including NaN and the sign of negative zero.
+			if (unlikely(p_right == 0)) {
+				if (p_left == 0 || Math::is_nan(double(p_left))) {
+					return Math::NaN;
+				}
+				return std::copysign(Math::INF, double(p_left)) * std::copysign(1.0, double(p_right));
+			}
+		}
+		return p_left / p_right;
+	}
+
 public:
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		VariantInternalAccessor<R>::get(r_ret) = VariantInternalAccessor<A>::get(left) / VariantInternalAccessor<B>::get(right);
+		VariantInternalAccessor<R>::get(r_ret) = divide(VariantInternalAccessor<A>::get(left), VariantInternalAccessor<B>::get(right));
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<R>::encode(PtrToArg<A>::convert(left) / PtrToArg<B>::convert(right), r_ret);
+		PtrToArg<R>::encode(divide(PtrToArg<A>::convert(left), PtrToArg<B>::convert(right)), r_ret);
 	}
 	using ReturnType = R;
 };

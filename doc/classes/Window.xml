@@ -122,6 +122,12 @@
 				Returns layout direction and text writing direction.
 			</description>
 		</method>
+		<method name="get_native_surface">
+			<return type="RenderingNativeSurface" />
+			<description>
+				Returns the native surface assigned to this window, or [code]null[/code] if no surface is assigned.
+			</description>
+		</method>
 		<method name="get_output_max_linear_value" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -575,6 +581,14 @@
 			<param index="0" name="direction" type="int" enum="Window.LayoutDirection" />
 			<description>
 				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
+			</description>
+		</method>
+		<method name="set_native_surface">
+			<return type="void" />
+			<param index="0" name="native_surface" type="RenderingNativeSurface" />
+			<description>
+				Assigns a rendering surface provided by the embedding host. The window keeps a reference to [param native_surface]. Replacing an attached surface tears down the old window before creating one for the new surface. Pass [code]null[/code] to clear the assigned surface.
+				[b]Note:[/b] Call this method on the Godot main thread. Host resources must remain valid until the embedded display server has completed detaching the surface.
 			</description>
 		</method>
 		<method name="set_taskbar_progress_state">

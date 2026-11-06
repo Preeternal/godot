@@ -134,7 +134,7 @@ TEST_CASE("[IPAddress] IPv4 Parsing") {
 		return memcmp(IPAddress(l_ip).get_ipv4(), &l_test, 4) == 0 && IPTester::test_v4(l_ip, true);
 	};
 	CHECK(test_ip("127.0.0.1", 2130706433));
-	CHECK(test_ip("255.0.0.0", 255 << 24));
+	CHECK(test_ip("255.0.0.0", 255u << 24));
 	CHECK(test_ip("0.255.0.0", 255 << 16));
 	CHECK(test_ip("0.0.255.0", 255 << 8));
 	CHECK(test_ip("0.0.0.255", 255));

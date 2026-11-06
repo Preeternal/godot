@@ -395,7 +395,7 @@ static inline int32_t TO_SWCOORD(float val)
 
 static inline uint32_t JOIN(uint8_t c0, uint8_t c1, uint8_t c2, uint8_t c3)
 {
-    return (c0 << 24 | c1 << 16 | c2 << 8 | c3);
+    return (uint32_t(c0) << 24 | uint32_t(c1) << 16 | uint32_t(c2) << 8 | uint32_t(c3));
 }
 
 static inline uint32_t ALPHA_BLEND(uint32_t c, uint32_t a)

@@ -116,25 +116,25 @@ static inline uint8_t _argbLuma(uint8_t* c)
 
 static inline uint8_t _abgrInvLuma(uint8_t* c)
 {
-    return ~_abgrLuma(c);
+    return uint8_t(~_abgrLuma(c));
 }
 
 
 static inline uint8_t _argbInvLuma(uint8_t* c)
 {
-    return ~_argbLuma(c);
+    return uint8_t(~_argbLuma(c));
 }
 
 
 static inline uint32_t _abgrJoin(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    return (a << 24 | b << 16 | g << 8 | r);
+    return (uint32_t(a) << 24 | uint32_t(b) << 16 | uint32_t(g) << 8 | uint32_t(r));
 }
 
 
 static inline uint32_t _argbJoin(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    return (a << 24 | r << 16 | g << 8 | b);
+    return (uint32_t(a) << 24 | uint32_t(r) << 16 | uint32_t(g) << 8 | uint32_t(b));
 }
 
 static inline bool _blending(const SwSurface* surface)

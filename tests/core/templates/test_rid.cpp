@@ -166,7 +166,7 @@ TEST_CASE("[RID_Owner] Thread safety") {
 							RID_OwnerTester *rot = (RID_OwnerTester *)p_data;
 
 							auto _compute_thread_unique_byte = [](uint32_t p_idx) -> char {
-								return ((p_idx & 0xff) ^ (0b11111110 << (p_idx % 8)));
+								return char(((p_idx & 0xff) ^ (0b11111110 << (p_idx % 8))) & 0xff);
 							};
 
 							// 1. Each thread gets a zero-based index.

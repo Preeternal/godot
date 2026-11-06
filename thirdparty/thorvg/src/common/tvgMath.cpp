@@ -450,7 +450,15 @@ void Bezier::bounds(BBox& box, const Point& start, const Point& ctrl1, const Poi
         auto h = b * b - a * c;
         if (h <= 0.0f) return;
         h = sqrtf(h);
-        float t[2] = {(-b - h) / a, (-b + h) / a};
+        float t[2];
+        if (a == 0.0f) {
+            // The derivative is linear when the cubic coefficient vanishes.
+            if (b == 0.0f) return;
+            t[0] = t[1] = -c / (2.0f * b);
+        } else {
+            t[0] = (-b - h) / a;
+            t[1] = (-b + h) / a;
+        }
         for (int i = 0; i < 2; ++i) {
             if (t[i] <= 0.0f || t[i] >= 1.0f) continue;
             auto s = 1.0f - t[i];

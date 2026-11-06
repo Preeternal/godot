@@ -1133,10 +1133,10 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			for (int i = 0; i < ds; i++) {
 				if (is16) {
 					int16_t v = CLAMP(data[i] * 32768, -32768, 32767);
-					encode_uint16(v, &w[i * 2]);
+					encode_uint16(uint16_t(v), &w[i * 2]);
 				} else {
 					int8_t v = CLAMP(data[i] * 128, -128, 127);
-					w[i] = v;
+					w[i] = uint8_t(v);
 				}
 			}
 		}

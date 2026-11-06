@@ -100,12 +100,12 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 	uint32_t height = p_header.image_height;
 	tga_origin_e origin = static_cast<tga_origin_e>((p_header.image_descriptor & TGA_ORIGIN_MASK) >> TGA_ORIGIN_SHIFT);
 	uint8_t alpha_bits = p_header.image_descriptor & TGA_IMAGE_DESCRIPTOR_ALPHA_MASK;
-	uint32_t x_start;
+	int32_t x_start;
 	int32_t x_step;
-	uint32_t x_end;
-	uint32_t y_start;
+	int32_t x_end;
+	int32_t y_start;
 	int32_t y_step;
-	uint32_t y_end;
+	int32_t y_end;
 
 	if (origin == TGA_ORIGIN_TOP_LEFT || origin == TGA_ORIGIN_TOP_RIGHT) {
 		y_start = 0;
@@ -132,8 +132,8 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 	uint8_t *image_data_w = image_data.ptrw();
 
 	size_t i = 0;
-	uint32_t x = x_start;
-	uint32_t y = y_start;
+	int32_t x = x_start;
+	int32_t y = y_start;
 
 	if (p_header.pixel_depth == 8) {
 		if (p_is_monochrome) {

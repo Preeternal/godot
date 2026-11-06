@@ -1624,6 +1624,21 @@
 				Returns [code]true[/code] if the window background can be made transparent. This method returns [code]false[/code] if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code], or if transparency is not supported by the renderer or OS compositor.
 			</description>
 		</method>
+		<method name="key">
+			<return type="void" />
+			<param index="0" name="key" type="int" enum="Key" />
+			<param index="1" name="char" type="int" />
+			<param index="2" name="unshifted" type="int" enum="Key" />
+			<param index="3" name="physical" type="int" enum="Key" />
+			<param index="4" name="modifiers" type="int" enum="KeyModifierMask" is_bitfield="true" />
+			<param index="5" name="pressed" type="bool" />
+			<param index="6" name="location" type="int" enum="KeyLocation" />
+			<param index="7" name="window" type="int" />
+			<description>
+				Forwards a keyboard event from the embedding host to the specified window. [param char] is the Unicode character, [param unshifted] is the key label, and [param physical] identifies the physical key. [param modifiers] contains the active modifier keys.
+				[b]Note:[/b] This method is implemented only by the embedded display server.
+			</description>
+		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -1678,6 +1693,20 @@
 				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
+		<method name="mouse_button">
+			<return type="void" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="mouse_button_index" type="int" enum="MouseButton" />
+			<param index="3" name="pressed" type="bool" />
+			<param index="4" name="double_click" type="bool" />
+			<param index="5" name="cancelled" type="bool" />
+			<param index="6" name="window" type="int" />
+			<description>
+				Forwards a mouse button event from the embedding host to the specified window at window-local coordinates [param x] and [param y]. [param cancelled] indicates that the host canceled the event.
+				[b]Note:[/b] This method is implemented only by the embedded display server.
+			</description>
+		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
 			<return type="int" enum="MouseButtonMask" is_bitfield="true" />
 			<description>
@@ -1694,6 +1723,18 @@
 			<return type="Vector2i" />
 			<description>
 				Returns the mouse cursor's current position in screen coordinates.
+			</description>
+		</method>
+		<method name="mouse_motion">
+			<return type="void" />
+			<param index="0" name="prev_x" type="int" />
+			<param index="1" name="prev_y" type="int" />
+			<param index="2" name="x" type="int" />
+			<param index="3" name="y" type="int" />
+			<param index="4" name="window" type="int" />
+			<description>
+				Forwards mouse motion from the embedding host to the specified window. All coordinates are window-local; relative motion is computed from the previous and current positions.
+				[b]Note:[/b] This method is implemented only by the embedded display server.
 			</description>
 		</method>
 		<method name="mouse_set_mode">
@@ -2008,6 +2049,34 @@
 				- [code]wintab[/code]: Wacom Wintab API (compatible device driver required).
 				- [code]dummy[/code]: Dummy driver, tablet input is disabled.
 				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
+		<method name="touch_drag">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="prev_x" type="int" />
+			<param index="2" name="prev_y" type="int" />
+			<param index="3" name="x" type="int" />
+			<param index="4" name="y" type="int" />
+			<param index="5" name="pressure" type="float" />
+			<param index="6" name="tilt" type="Vector2" />
+			<param index="7" name="window" type="int" />
+			<description>
+				Forwards a touch drag event from the embedding host to the specified window. [param idx] identifies the touch; the previous and current positions use window-local coordinates. [param pressure] and [param tilt] describe the touch pressure and pen tilt.
+				[b]Note:[/b] This method is implemented only by the embedded display server.
+			</description>
+		</method>
+		<method name="touch_press">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="x" type="int" />
+			<param index="2" name="y" type="int" />
+			<param index="3" name="pressed" type="bool" />
+			<param index="4" name="double_click" type="bool" />
+			<param index="5" name="window" type="int" />
+			<description>
+				Forwards a touch press or release from the embedding host to the specified window at window-local coordinates [param x] and [param y]. [param idx] identifies the touch and [param double_click] indicates a double tap.
+				[b]Note:[/b] This method is implemented only by the embedded display server.
 			</description>
 		</method>
 		<method name="tts_get_voices" qualifiers="const">

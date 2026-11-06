@@ -19,7 +19,7 @@ env:
   ASAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/asan.txt
   LSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/lsan.txt
   TSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
-  UBSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
+  UBSAN_OPTIONS: color=always:print_suppressions=1:halt_on_error=1:suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
 
 jobs:
   build-linux:
@@ -50,10 +50,12 @@ jobs:
             cache-name: linux-editor-double-sanitizers
             target: editor
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
+            # Use -Og to keep the instrumented image within x86_64 PC-relative relocation range.
             scons-flags: >-
               dev_build=yes
               scu_build=yes
               debug_symbols=no
+              optimize=debug
               precision=double
               use_asan=yes
               use_ubsan=yes

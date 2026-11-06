@@ -40,6 +40,64 @@ TEST_FORCE_LINK(test_image)
 
 namespace TestImage {
 
+#ifdef MODULE_TGA_ENABLED
+TEST_CASE("[Image] TGA decodes all four image origins") {
+	// Four BGR pixels in stream order: red, green, blue, white.
+	const uint8_t tga[] = {
+		0,
+		0,
+		2,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		2,
+		0,
+		2,
+		0,
+		24,
+		0,
+		0,
+		0,
+		255,
+		0,
+		255,
+		0,
+		255,
+		0,
+		0,
+		255,
+		255,
+		255,
+	};
+	const Color colors[] = { Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1), Color(1, 1, 1) };
+	const int expected[4][4] = {
+		{ 2, 3, 0, 1 }, // Bottom left.
+		{ 3, 2, 1, 0 }, // Bottom right.
+		{ 0, 1, 2, 3 }, // Top left.
+		{ 1, 0, 3, 2 }, // Top right.
+	};
+	for (int origin = 0; origin < 4; origin++) {
+		PackedByteArray data;
+		data.resize(sizeof(tga));
+		memcpy(data.ptrw(), tga, sizeof(tga));
+		data.set(17, uint8_t(origin << 4));
+		Ref<Image> image = memnew(Image());
+		REQUIRE(image->load_tga_from_buffer(data) == OK);
+		REQUIRE(image->get_width() == 2);
+		REQUIRE(image->get_height() == 2);
+		for (int i = 0; i < 4; i++) {
+			CHECK(image->get_pixel(i % 2, i / 2) == colors[expected[origin][i]]);
+		}
+	}
+}
+#endif
+
 TEST_CASE("[Image] Instantiation") {
 	Ref<Image> image = memnew(Image(8, 4, false, Image::FORMAT_RGBA8));
 	CHECK_MESSAGE(
