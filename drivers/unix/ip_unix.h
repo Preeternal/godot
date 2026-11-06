@@ -46,6 +46,9 @@ public:
 
 	static void make_default();
 	IPUnix();
+	~IPUnix() {
+		_stop_resolver();
+	}
 };
 
 #endif // UNIX_ENABLED

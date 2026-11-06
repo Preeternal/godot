@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderingNativeSurfaceApple" inherits="RenderingNativeSurface" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Rendering surface backed by an Apple layer.
+	</brief_description>
+	<description>
+		Wraps an Apple rendering layer for LibGodot embedding. The wrapper retains its layer while alive. Native UI changes must follow Apple main-thread requirements.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create" qualifiers="static">
+			<return type="RenderingNativeSurfaceApple" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns a wrapper for the native layer pointer encoded in [param layer]. A zero pointer requests a new layer.
+			</description>
+		</method>
+		<method name="get_layer">
+			<return type="int" />
+			<description>
+				Returns the native layer pointer encoded as an integer.
+			</description>
+		</method>
+	</methods>
+</class>

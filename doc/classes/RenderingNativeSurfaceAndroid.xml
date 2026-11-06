@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderingNativeSurfaceAndroid" inherits="RenderingNativeSurface" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Rendering surface backed by an Android native window.
+	</brief_description>
+	<description>
+		Wraps an [code]ANativeWindow[/code] for LibGodot embedding. The embedding host owns the native window reference and must keep it valid until rendering has detached from the surface.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create" qualifiers="static">
+			<return type="RenderingNativeSurfaceAndroid" />
+			<param index="0" name="window" type="int" />
+			<param index="1" name="width" type="int" />
+			<param index="2" name="height" type="int" />
+			<description>
+				Returns a wrapper for the native window pointer encoded in [param window], with the initial [param width] and [param height] in pixels.
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the surface height in pixels.
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the surface width in pixels.
+			</description>
+		</method>
+		<method name="get_window" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the native window pointer encoded as an integer.
+			</description>
+		</method>
+	</methods>
+</class>

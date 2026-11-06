@@ -78,6 +78,9 @@ struct _IP_ResolverPrivate {
 
 	void resolve_queues() {
 		for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
+			if (thread_abort.is_set()) {
+				return;
+			}
 			if (queue[i].status.get() != IP::RESOLVER_STATUS_WAITING) {
 				continue;
 			}
@@ -112,6 +115,9 @@ struct _IP_ResolverPrivate {
 
 		while (!ipr->thread_abort.is_set()) {
 			ipr->sem.wait();
+			if (ipr->thread_abort.is_set()) {
+				break;
+			}
 			ipr->resolve_queues();
 		}
 	}
@@ -345,13 +351,18 @@ IP::IP() {
 	resolver->thread.start(_IP_ResolverPrivate::_thread_function, resolver);
 }
 
+void IP::_stop_resolver() {
+	if (resolver->thread.is_started()) {
+		resolver->thread_abort.set();
+		resolver->sem.post();
+		resolver->thread.wait_to_finish();
+	}
+}
+
 IP::~IP() {
+	_stop_resolver();
+	memdelete(resolver);
 	if (singleton == this) {
 		singleton = nullptr;
 	}
-	resolver->thread_abort.set();
-	resolver->sem.post();
-	resolver->thread.wait_to_finish();
-
-	memdelete(resolver);
 }

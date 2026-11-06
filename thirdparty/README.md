@@ -409,6 +409,8 @@ Patches:
 
 - `0001-enable-both-gl-and-gles.patch` ([GH-72831](https://github.com/godotengine/godot/pull/72831))
 - `0002-revert-egl_static-removal.patch` ([GH-107312](https://github.com/godotengine/godot/pull/107312))
+- `0003-libgodot-library-loading.patch`: LibGodot GL/EGL library selection and
+  unloading, adapted from Migeran's GLES embedding work ([GH-124015](https://github.com/godotengine/godot/pull/124015)).
 
 
 ## glslang

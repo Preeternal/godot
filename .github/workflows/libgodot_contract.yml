@@ -73,6 +73,15 @@ jobs:
             "$GITHUB_WORKSPACE/bin/ci-library/libgodot.macos.template_debug.arm64.dylib" \
             "$GITHUB_WORKSPACE/tests/libgodot/project" 2>&1 | tee "$RESULTS/lifecycle.log"
 
+      - name: Run pending DNS shutdown regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This also checks that the standalone executable stops the worker
+          # before the concrete IP backend's virtual methods disappear.
+          bin/ci-editor/godot.macos.editor.universal --headless \
+            --path tests/libgodot/project --quit-after 1 2>&1 | tee "$RESULTS/dns-shutdown.log"
+
       - name: Upload contract diagnostics
         if: always()
         uses: actions/upload-artifact@v7

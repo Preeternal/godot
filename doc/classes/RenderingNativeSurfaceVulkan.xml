@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderingNativeSurfaceVulkan" inherits="RenderingNativeSurface" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Rendering surface backed by a Vulkan surface handle.
+	</brief_description>
+	<description>
+		Wraps a native Vulkan surface for LibGodot embedding. Availability depends on Vulkan support in the engine build.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create" qualifiers="static">
+			<return type="RenderingNativeSurfaceVulkan" />
+			<param index="0" name="vulkan_surface" type="int" />
+			<description>
+				Returns a wrapper for the Vulkan surface handle encoded in [param vulkan_surface]. Returns [code]null[/code] if Vulkan is unavailable.
+			</description>
+		</method>
+	</methods>
+</class>

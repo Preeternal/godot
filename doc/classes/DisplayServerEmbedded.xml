@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DisplayServerEmbedded" inherits="DisplayServer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Display server for rendering into surfaces supplied by a host application.
+	</brief_description>
+	<description>
+		Used by LibGodot when an application embeds Godot rendering in its native UI. The host supplies rendering surfaces, display information, and input events.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="detach_native_surface">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" />
+			<description>
+				Detaches the specified window on the Godot main thread. Returns [code]true[/code] after previous renderer access completes and engine references to the surface are released. Repeating a successful detach is allowed. Returns [code]false[/code] for an unknown window or when detaching cannot complete; the host must then retain native resources until full engine cleanup.
+			</description>
+		</method>
+		<method name="get_singleton" qualifiers="static">
+			<return type="DisplayServerEmbedded" />
+			<description>
+				Returns the active embedded display server, or [code]null[/code] when another display server is active.
+			</description>
+		</method>
+		<method name="resize_window">
+			<return type="void" />
+			<param index="0" name="size" type="Vector2i" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Updates the size of the embedded window identified by [param id], in pixels.
+			</description>
+		</method>
+		<method name="set_content_scale">
+			<return type="void" />
+			<param index="0" name="content_scale" type="float" />
+			<description>
+				Updates the content scale reported by the embedded display server.
+			</description>
+		</method>
+		<method name="set_native_surface" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="native_surface" type="RenderingNativeSurface" />
+			<description>
+				Assigns the main rendering surface before embedded display server initialization.
+			</description>
+		</method>
+		<method name="set_screen_get_dpi_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the host callback used to query screen density in dots per inch.
+			</description>
+		</method>
+		<method name="set_screen_get_scale_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the host callback used to query the screen scale.
+			</description>
+		</method>
+		<method name="set_screen_get_size_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the host callback used to query the screen size.
+			</description>
+		</method>
+		<method name="touches_canceled">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="window" type="int" />
+			<description>
+				Cancels the touch identified by [param idx] in the specified [param window].
+			</description>
+		</method>
+	</methods>
+</class>

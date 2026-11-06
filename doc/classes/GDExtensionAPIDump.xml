@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDExtensionAPIDump" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Generates and validates extension API descriptions.
+	</brief_description>
+	<description>
+		Editor-build utility for generating API metadata used by GDExtension bindings. It can include project-specific global and autoload classes when a project is loaded.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="dump_extension_api" qualifiers="static">
+			<return type="String" />
+			<description>
+				Returns the generated extension API as a JSON string.
+			</description>
+		</method>
+		<method name="generate_extension_api" qualifiers="static">
+			<return type="Dictionary" />
+			<param index="0" name="include_docs" type="bool" default="false" />
+			<description>
+				Returns extension API metadata. Includes class reference documentation when [param include_docs] is [code]true[/code].
+			</description>
+		</method>
+		<method name="generate_extension_json_file" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="include_docs" type="bool" default="false" />
+			<description>
+				Writes extension API metadata to [param path]. Includes class reference documentation when [param include_docs] is [code]true[/code].
+			</description>
+		</method>
+		<method name="validate_extension_json_file" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Validates the extension API JSON at [param path] against the current engine API and returns an [enum Error] result.
+			</description>
+		</method>
+	</methods>
+</class>

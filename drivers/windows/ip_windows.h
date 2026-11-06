@@ -46,6 +46,9 @@ public:
 
 	static void make_default();
 	IPWindows();
+	~IPWindows() {
+		_stop_resolver();
+	}
 };
 
 #endif // WINDOWS_ENABLED

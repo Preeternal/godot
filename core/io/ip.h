@@ -69,6 +69,8 @@ private:
 protected:
 	static inline IP *singleton = nullptr;
 	static void _bind_methods();
+	// Concrete backends must stop virtual resolver calls before their destruction.
+	void _stop_resolver();
 
 	PackedStringArray _get_local_addresses() const;
 	TypedArray<Dictionary> _get_local_interfaces() const;

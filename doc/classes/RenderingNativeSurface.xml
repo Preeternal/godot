@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderingNativeSurface" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Reference-counted wrapper for a host-provided rendering surface.
+	</brief_description>
+	<description>
+		Used by LibGodot to render into a surface supplied by an embedding application. Assign a platform-specific surface with [method Window.set_native_surface]. Keep native resources valid until [method DisplayServerEmbedded.detach_native_surface] completes. Release host references to engine objects before destroying the Godot instance.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

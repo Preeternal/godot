@@ -43,6 +43,10 @@ private:
 	}
 
 public:
+	~IPWeb() {
+		_stop_resolver();
+	}
+
 	virtual void get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const override {}
 
 	static void make_default() {
