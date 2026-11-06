@@ -1,0 +1,22 @@
+LibGodot window-aware boot images
+--------------------------------
+
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/set_boot_image/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/set_boot_image/arguments/3': default_value changed value in new API, from "true" to "0".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/set_boot_image/arguments/3': type changed value in new API, from "bool" to "int".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/set_boot_image_with_stretch/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/set_boot_image_with_stretch/arguments/3': default_value changed value in new API, from "true" to "0".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/set_boot_image_with_stretch/arguments/3': type changed value in new API, from "bool" to "int".
+
+The LibGodot fork inserts an optional window_id before use_filter so embedded
+hosts can select the target window. This is an intentional fork API change;
+source callers must pass the window ID before the filter or use named arguments.
+The current five-argument API and generated bindings must remain unchanged.
+
+Existing GDExtension binaries retain their four-argument bool filter through
+RenderingServer's _compat_47 bindings, which forward to MAIN_WINDOW_ID.
+Legacy hashes are 3759744527 and 2244367877 for set_boot_image, and 1104470771
+for set_boot_image_with_stretch. Their argument types and defaults are covered
+by the RenderingServer unit tests, in addition to the LibGodot API/C ABI checks.
+The generic validator compares argument arrays before checking compatible hashes,
+so it still reports these six structural differences. No other errors are allowed.
