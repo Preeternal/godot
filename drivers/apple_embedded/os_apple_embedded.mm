@@ -50,7 +50,7 @@
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 #include "main/main.h"
-#include "servers/audio/audio_driver.h"
+#include "servers/audio/audio_server.h"
 #include "servers/camera/camera_server.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server_embedded.h"

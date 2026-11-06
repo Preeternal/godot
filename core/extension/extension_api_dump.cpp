@@ -1458,8 +1458,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 		const HashMap<StringName, ProjectSettings::AutoloadInfo> &autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
-		for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
-			const ProjectSettings::AutoloadInfo &info = E.value;
+		for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &autoload : autoloads) {
+			const ProjectSettings::AutoloadInfo &info = autoload.value;
 			if (!info.path.ends_with(".gd")) {
 				continue;
 			}

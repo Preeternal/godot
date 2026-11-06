@@ -221,6 +221,9 @@ Error String::append_utf32(const Span<char32_t> &p_cstr) {
 }
 
 void String::append_utf32_unchecked(const Span<char32_t> &p_span) {
+	if (p_span.is_empty()) {
+		return;
+	}
 	const int prev_length = length();
 	resize_uninitialized(prev_length + p_span.size() + 1); // + 1 for \0
 	char32_t *dst = ptrw() + prev_length;

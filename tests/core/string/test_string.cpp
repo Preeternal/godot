@@ -48,6 +48,17 @@ TEST_CASE("[String] Assign Latin-1 char string") {
 	CHECK(u32scmp(s.get_data(), U"Hello") == 0);
 }
 
+TEST_CASE("[String] Appending empty UTF-32 spans preserves contents") {
+	String empty;
+	empty.append_utf32_unchecked(Span<char32_t>());
+	CHECK(empty.is_empty());
+	String text = "Godot";
+	text.append_utf32_unchecked(Span<char32_t>());
+	CHECK(text == "Godot");
+	text += String();
+	CHECK(text == "Godot");
+}
+
 TEST_CASE("[String] Assign from Latin-1 char string (operator=)") {
 	String s = "Dolly";
 	const String &t = s;

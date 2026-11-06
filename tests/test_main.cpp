@@ -43,6 +43,7 @@
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/accessibility_server_dummy.h"
 #include "servers/rendering/rendering_server.h"
 #include "tests/display_server_mock.h"
 #include "tests/force_link.gen.h"
@@ -57,9 +58,11 @@
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_dummy.h"
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_dummy.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
@@ -86,6 +89,11 @@ int test_main(int argc, char *argv[]) {
 	}
 	OS::get_singleton()->set_cmdline("", args, List<String>());
 	DisplayServerMock::register_mock_driver();
+	// Exercise the same registry layout as builds with a native accessibility backend.
+	AccessibilityServer::register_create_function("mock", [](Error &r_error) -> AccessibilityServer * {
+		r_error = OK;
+		return memnew(AccessibilityServerDummy);
+	});
 
 	WorkerThreadPool::get_singleton()->init();
 
@@ -220,10 +228,16 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			ERR_PRINT_OFF;
 #ifndef NAVIGATION_3D_DISABLED
 			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
+			if (!navigation_server_3d) {
+				navigation_server_3d = memnew(NavigationServer3DDummy);
+			}
 			navigation_server_3d->init();
 #endif // NAVIGATION_3D_DISABLED
 #ifndef NAVIGATION_2D_DISABLED
 			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
+			if (!navigation_server_2d) {
+				navigation_server_2d = memnew(NavigationServer2DDummy);
+			}
 			navigation_server_2d->init();
 #endif // NAVIGATION_2D_DISABLED
 			ERR_PRINT_ON;
@@ -263,6 +277,9 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		if (suite_name.contains("[Navigation3D]") && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
+			if (!navigation_server_3d) {
+				navigation_server_3d = memnew(NavigationServer3DDummy);
+			}
 			navigation_server_3d->init();
 			ERR_PRINT_ON;
 			return;
@@ -273,6 +290,9 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		if (suite_name.contains("[Navigation2D]") && navigation_server_2d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
+			if (!navigation_server_2d) {
+				navigation_server_2d = memnew(NavigationServer2DDummy);
+			}
 			navigation_server_2d->init();
 			ERR_PRINT_ON;
 			return;

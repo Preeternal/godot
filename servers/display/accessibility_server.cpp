@@ -231,6 +231,10 @@ AccessibilityServer *AccessibilityServer::create(int p_index, Error &r_error) {
 }
 
 void AccessibilityServer::reset() {
+	for (AccessibilityServerCreate &server : server_create_functions) {
+		server = {};
+	}
+	server_create_functions[0] = { "dummy", &AccessibilityServerDummy::create_func };
 	server_create_count = 1;
 }
 
@@ -257,6 +261,5 @@ AccessibilityServer::AccessibilityServer() {
 }
 
 AccessibilityServer::~AccessibilityServer() {
-	reset();
 	singleton = nullptr;
 }

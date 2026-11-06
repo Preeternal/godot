@@ -1032,6 +1032,7 @@ void Main::test_cleanup() {
 	MovieWriter::reset();
 	AudioDriverManager::reset();
 	DisplayServer::reset();
+	AccessibilityServer::reset();
 	SceneTree::reset_idle_callbacks();
 }
 #endif // TESTS_ENABLED
@@ -3059,6 +3060,7 @@ error:
 	}
 	AudioDriverManager::reset();
 	DisplayServer::reset();
+	AccessibilityServer::reset();
 
 	if (engine) {
 		memdelete(engine);
@@ -5525,6 +5527,7 @@ void Main::cleanup(bool p_force) {
 	MovieWriter::reset();
 	AudioDriverManager::reset();
 	DisplayServer::reset();
+	AccessibilityServer::reset();
 	SceneTree::reset_idle_callbacks();
 	display_driver = String();
 	tablet_driver = String();
