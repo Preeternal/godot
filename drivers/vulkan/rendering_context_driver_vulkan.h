@@ -45,6 +45,7 @@
 
 class RenderingContextDriverVulkan : public RenderingContextDriver {
 public:
+	using RenderingContextDriver::surface_create;
 	struct Functions {
 		// Physical device.
 		PFN_vkGetPhysicalDeviceFeatures2 GetPhysicalDeviceFeatures2 = nullptr;

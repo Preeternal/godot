@@ -89,6 +89,8 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	void _set_boot_image_compat_47(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter);
+	void _set_boot_image_with_stretch_compat_47(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter);
 	void _environment_set_fog_bind_compat_84792(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect);
 	void _canvas_item_add_multiline_bind_compat_84523(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = -1.0);
 	void _canvas_item_add_rect_bind_compat_84523(RID p_item, const Rect2 &p_rect, const Color &p_color);

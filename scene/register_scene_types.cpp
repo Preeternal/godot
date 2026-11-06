@@ -36,6 +36,12 @@
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#ifndef NAVIGATION_2D_DISABLED
+#include "servers/navigation_2d/navigation_server_2d.h"
+#endif
+#ifndef NAVIGATION_3D_DISABLED
+#include "servers/navigation_3d/navigation_server_3d.h"
+#endif
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
@@ -1055,29 +1061,9 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	// 2D nodes that support navmesh baking need to server register their source geometry parsers.
-	MeshInstance2D::navmesh_parse_init();
-	MultiMeshInstance2D::navmesh_parse_init();
-	NavigationObstacle2D::navmesh_parse_init();
-	Polygon2D::navmesh_parse_init();
-#ifndef DISABLE_DEPRECATED
-	TileMap::navmesh_parse_init();
-#endif
-	TileMapLayer::navmesh_parse_init();
-#ifndef PHYSICS_2D_DISABLED
-	StaticBody2D::navmesh_parse_init();
-#endif // PHYSICS_2D_DISABLED
 #endif // NAVIGATION_2D_DISABLED
 
-#ifndef NAVIGATION_3D_DISABLED
-	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
-	MeshInstance3D::navmesh_parse_init();
-	MultiMeshInstance3D::navmesh_parse_init();
-	NavigationObstacle3D::navmesh_parse_init();
-#ifndef PHYSICS_3D_DISABLED
-	StaticBody3D::navmesh_parse_init();
-#endif // PHYSICS_3D_DISABLED
-#endif // NAVIGATION_3D_DISABLED
+	initialize_scene_navigation_parsers();
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	OS::get_singleton()->yield(); // may take time to init
@@ -1317,16 +1303,44 @@ void register_scene_types() {
 	OS::get_singleton()->benchmark_end_measure("Scene", "Register Types");
 }
 
-void unregister_scene_types() {
-	OS::get_singleton()->benchmark_begin_measure("Scene", "Unregister Types");
+void initialize_scene_navigation_parsers() {
+#ifndef NAVIGATION_2D_DISABLED
+	if (NavigationServer2D::get_singleton()) {
+		MeshInstance2D::navmesh_parse_init();
+		MultiMeshInstance2D::navmesh_parse_init();
+		NavigationObstacle2D::navmesh_parse_init();
+		Polygon2D::navmesh_parse_init();
+#ifndef DISABLE_DEPRECATED
+		TileMap::navmesh_parse_init();
+#endif
+		TileMapLayer::navmesh_parse_init();
+#ifndef PHYSICS_2D_DISABLED
+		StaticBody2D::navmesh_parse_init();
+#endif
+	}
+#endif
+#ifndef NAVIGATION_3D_DISABLED
+	if (NavigationServer3D::get_singleton()) {
+		MeshInstance3D::navmesh_parse_init();
+		MultiMeshInstance3D::navmesh_parse_init();
+		NavigationObstacle3D::navmesh_parse_init();
+#ifndef PHYSICS_3D_DISABLED
+		StaticBody3D::navmesh_parse_init();
+#endif
+	}
+#endif
+}
 
-	SceneDebugger::deinitialize();
-
+void finalize_scene_navigation_parsers() {
 #ifndef NAVIGATION_2D_DISABLED
 	MeshInstance2D::navmesh_parse_finish();
 	MultiMeshInstance2D::navmesh_parse_finish();
 	NavigationObstacle2D::navmesh_parse_finish();
 	Polygon2D::navmesh_parse_finish();
+#ifndef DISABLE_DEPRECATED
+	TileMap::navmesh_parse_finish();
+#endif
+	TileMapLayer::navmesh_parse_finish();
 #ifndef PHYSICS_2D_DISABLED
 	StaticBody2D::navmesh_parse_finish();
 #endif // PHYSICS_2D_DISABLED
@@ -1340,6 +1354,13 @@ void unregister_scene_types() {
 	StaticBody3D::navmesh_parse_finish();
 #endif // PHYSICS_3D_DISABLED
 #endif // NAVIGATION_3D_DISABLED
+}
+
+void unregister_scene_types() {
+	OS::get_singleton()->benchmark_begin_measure("Scene", "Unregister Types");
+
+	SceneDebugger::deinitialize();
+	finalize_scene_navigation_parsers();
 
 	if constexpr (GD_IS_CLASS_ENABLED(TextureLayered)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);

@@ -3515,6 +3515,14 @@ void TileMapLayer::navmesh_parse_init() {
 	}
 }
 
+void TileMapLayer::navmesh_parse_finish() {
+	if (_navmesh_source_geometry_parser.is_valid() && NavigationServer2D::get_singleton()) {
+		NavigationServer2D::get_singleton()->free_rid(_navmesh_source_geometry_parser);
+	}
+	_navmesh_source_geometry_parser = RID();
+	_navmesh_source_geometry_parsing_callback = Callable();
+}
+
 void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node) {
 	TileMapLayer *tile_map_layer = Object::cast_to<TileMapLayer>(p_node);
 

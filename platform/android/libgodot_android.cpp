@@ -66,7 +66,7 @@ static void cleanup_android_session() {
 
 extern LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance_android(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, LogCallbackFunction p_log_func, LogCallbackData p_log_data, JNIEnv *env, jobject p_asset_manager, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jobject p_godot_io_wrapper) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
-	ERR_FAIL_COND_V(!env || p_argc < 1 || !p_argv || !p_argv[0], nullptr);
+	ERR_FAIL_COND_V(!env || p_argc < 1 || !p_argv || !p_argv[0] || !p_init_func, nullptr);
 	ERR_FAIL_COND_V(!p_asset_manager || !p_net_utils || !p_directory_access_handler || !p_file_access_handler || !p_godot_io_wrapper, nullptr);
 
 	JavaVM *jvm = nullptr;
@@ -101,7 +101,7 @@ extern LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance_android(
 	}
 
 	os = new OS_Android(nullptr, io_wrapper, false);
-	if (p_log_func != nullptr && p_log_data != nullptr) {
+	if (p_log_func != nullptr) {
 		LibGodotLogger *logger = memnew(LibGodotLogger);
 		logger->set_callback_function(p_log_func, p_log_data);
 		os->add_logger(logger);

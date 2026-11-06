@@ -413,6 +413,7 @@ void unregister_core_extensions() {
 
 	if (_is_core_extensions_registered) {
 		gdextension_manager->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
+		_is_core_extensions_registered = false;
 	}
 	GDExtension::finalize_gdextensions();
 

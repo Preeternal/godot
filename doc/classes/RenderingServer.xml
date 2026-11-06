@@ -3582,7 +3582,8 @@
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="scale" type="bool" />
-			<param index="3" name="use_filter" type="bool" default="true" />
+			<param index="3" name="screen" type="int" default="0" />
+			<param index="4" name="use_filter" type="bool" default="true" />
 			<description>
 				Sets a boot image. The [param color] defines the background color. The value of [param scale] indicates if the image will be scaled to fit the screen size. If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
@@ -3592,7 +3593,8 @@
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="stretch_mode" type="int" enum="RenderingServer.SplashStretchMode" />
-			<param index="3" name="use_filter" type="bool" default="true" />
+			<param index="3" name="screen" type="int" default="0" />
+			<param index="4" name="use_filter" type="bool" default="true" />
 			<description>
 				Sets a boot image. The [param color] defines the background color. The value of [param stretch_mode] indicates how the image will be stretched (see [enum SplashStretchMode] for possible values). If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>

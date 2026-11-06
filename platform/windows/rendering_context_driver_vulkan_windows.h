@@ -41,6 +41,7 @@ private:
 	const char *_get_platform_surface_extension() const override final;
 
 protected:
+	using RenderingContextDriverVulkan::surface_create;
 	SurfaceID surface_create(const void *p_platform_data) override final;
 
 public:

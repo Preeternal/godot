@@ -70,7 +70,17 @@ void RenderingServer::_particles_request_process_time_bind_compat_109142(RID p_p
 	particles_request_process_time(p_particles, p_request_process_time, 0.0);
 }
 
+void RenderingServer::_set_boot_image_compat_47(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	set_boot_image(p_image, p_color, p_scale, DisplayServerEnums::MAIN_WINDOW_ID, p_use_filter);
+}
+
+void RenderingServer::_set_boot_image_with_stretch_compat_47(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) {
+	set_boot_image_with_stretch(p_image, p_color, p_stretch_mode, DisplayServerEnums::MAIN_WINDOW_ID, p_use_filter);
+}
+
 void RenderingServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &RenderingServer::_set_boot_image_compat_47, DEFVAL(true));
+	ClassDB::bind_compatibility_method(D_METHOD("set_boot_image_with_stretch", "image", "color", "stretch_mode", "use_filter"), &RenderingServer::_set_boot_image_with_stretch_compat_47, DEFVAL(true));
 	ClassDB::bind_compatibility_method(D_METHOD("multimesh_allocate_data", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &RenderingServer::_multimesh_allocate_data_bind_compat_99455, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect"), &RenderingServer::_environment_set_fog_bind_compat_84792);
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_multiline", "item", "points", "colors", "width"), &RenderingServer::_canvas_item_add_multiline_bind_compat_84523, DEFVAL(-1.0));

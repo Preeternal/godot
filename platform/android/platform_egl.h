@@ -31,6 +31,10 @@
 #pragma once
 
 // IWYU pragma: begin_exports.
+#ifdef GLAD_ENABLED
+#include <glad/egl.h>
+#else
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#endif
 // IWYU pragma: end_exports.

@@ -56,6 +56,7 @@ public:
 	bool device_supports_present(uint32_t p_device_index, SurfaceID p_surface) const final override { return true; }
 	RenderingDeviceDriver *driver_create() final override;
 	void driver_free(RenderingDeviceDriver *p_driver) final override;
+	using RenderingContextDriver::surface_create;
 	SurfaceID surface_create(Ref<RenderingNativeSurface> p_native_surface) final override;
 	void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) final override;
 	void surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) final override;

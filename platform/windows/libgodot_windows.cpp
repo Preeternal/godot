@@ -44,9 +44,10 @@ static GodotInstance *instance = nullptr;
 
 GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, LogCallbackFunction p_log_func, LogCallbackData p_log_data) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created at a time.");
+	ERR_FAIL_COND_V(p_argc < 1 || !p_argv || !p_argv[0] || !p_init_func, nullptr);
 
 	OS_Windows *os = new OS_Windows(GetModuleHandle(nullptr));
-	if (p_log_func != nullptr && p_log_data != nullptr) {
+	if (p_log_func != nullptr) {
 		LibGodotLogger *logger = memnew(LibGodotLogger);
 		logger->set_callback_function(p_log_func, p_log_data);
 		os->add_logger(logger);
@@ -72,7 +73,7 @@ GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], 
 
 void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
 	GodotInstance *godot_instance = (GodotInstance *)p_godot_instance;
-	if (instance == godot_instance) {
+	if (instance && instance == godot_instance) {
 		godot_instance->stop();
 		memdelete(godot_instance);
 		instance = nullptr;

@@ -39,6 +39,7 @@
 #include "core/string/translation_server.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/register_scene_types.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/accessibility_server.h"
@@ -219,11 +220,15 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			ERR_PRINT_OFF;
 #ifndef NAVIGATION_3D_DISABLED
 			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
+			navigation_server_3d->init();
 #endif // NAVIGATION_3D_DISABLED
 #ifndef NAVIGATION_2D_DISABLED
 			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
+			navigation_server_2d->init();
 #endif // NAVIGATION_2D_DISABLED
 			ERR_PRINT_ON;
+
+			initialize_scene_navigation_parsers();
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
@@ -258,6 +263,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		if (suite_name.contains("[Navigation3D]") && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
+			navigation_server_3d->init();
 			ERR_PRINT_ON;
 			return;
 		}
@@ -267,6 +273,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		if (suite_name.contains("[Navigation2D]") && navigation_server_2d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
+			navigation_server_2d->init();
 			ERR_PRINT_ON;
 			return;
 		}
@@ -302,6 +309,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 #ifndef NAVIGATION_3D_DISABLED
 		if (navigation_server_3d) {
+			finalize_scene_navigation_parsers();
+			navigation_server_3d->finish();
 			memdelete(navigation_server_3d);
 			navigation_server_3d = nullptr;
 		}
@@ -309,6 +318,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 #ifndef NAVIGATION_2D_DISABLED
 		if (navigation_server_2d) {
+			finalize_scene_navigation_parsers();
+			navigation_server_2d->finish();
 			memdelete(navigation_server_2d);
 			navigation_server_2d = nullptr;
 		}
@@ -357,6 +368,17 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	}
 
 	void test_run_start() override {
+		// Test fixtures replace the navigation servers created by Main::test_setup.
+		// Their parser RIDs must belong to each fixture's server, not the old one.
+		finalize_scene_navigation_parsers();
+#ifndef NAVIGATION_3D_DISABLED
+		NavigationServer3D::get_singleton()->physics_process(0);
+		NavigationServer3DManager::finalize_server();
+#endif
+#ifndef NAVIGATION_2D_DISABLED
+		NavigationServer2D::get_singleton()->physics_process(0);
+		NavigationServer2DManager::finalize_server();
+#endif
 		signal_watcher = memnew(SignalWatcher);
 	}
 

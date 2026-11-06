@@ -39,6 +39,7 @@ private:
 	virtual const char *_get_platform_surface_extension() const override final;
 
 protected:
+	using RenderingContextDriverVulkan::surface_create;
 	SurfaceID surface_create(Ref<RenderingNativeSurface> p_native_surface) override final;
 	bool _use_validation_layers() const override final;
 

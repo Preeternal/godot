@@ -42,6 +42,7 @@ private:
 	virtual bool is_colorspace_externally_managed() const override final { return true; }
 
 protected:
+	using RenderingContextDriverVulkan::surface_create;
 	SurfaceID surface_create(const void *p_platform_data) override final;
 
 public:

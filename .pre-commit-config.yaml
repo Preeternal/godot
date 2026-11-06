@@ -107,7 +107,7 @@ repos:
         language: python
         entry: python tests/python_build/validate_libgodot_sources.py
         pass_filenames: false
-        files: ^(servers/rendering/SCsub|drivers/apple_embedded/SCsub|platform/ios/SCsub|tests/python_build/validate_libgodot_sources\.py)$
+        files: ^(servers/rendering/SCsub|drivers/gl_context/SCsub|drivers/apple_embedded/SCsub|platform/ios/SCsub|tests/python_build/validate_libgodot_sources\.py)$
 
       - id: validate-xml
         name: validate-xml

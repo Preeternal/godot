@@ -32,7 +32,7 @@
 
 #include "libgodot_logger.h"
 
-#include <thirdparty/zlib/gzguts.h>
+#include <cstdio>
 
 void LibGodotLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {

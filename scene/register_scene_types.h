@@ -32,4 +32,6 @@
 
 void register_scene_types();
 void unregister_scene_types();
+void initialize_scene_navigation_parsers();
+void finalize_scene_navigation_parsers();
 void register_scene_singletons();

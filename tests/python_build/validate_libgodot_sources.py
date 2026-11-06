@@ -9,18 +9,22 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class SourceEnvironment(dict[str, Any]):
-    def __init__(self, directory, library_type, vulkan=True, metal=False, d3d12=False):
+    def __init__(self, directory, library_type, vulkan=True, metal=False, d3d12=False, platform="ios", angle_libs=None):
         super().__init__(
             library_type=library_type,
             vulkan=vulkan,
             metal=metal,
             d3d12=d3d12,
+            platform=platform,
+            angle=False,
             APPLE_PLATFORM="ios",
             APPLE_SDK_PATH="unused",
             LIBSUFFIX=".a",
             LIBS=[],
             generate_bundle=False,
         )
+        if angle_libs is not None:
+            self["angle_libs"] = angle_libs
         self.directory = directory
         self.drivers_sources = []
         self.servers_sources = []
@@ -37,8 +41,15 @@ class SourceEnvironment(dict[str, Any]):
     def Prepend(self, **kwargs):
         pass
 
+    def disable_warnings(self):
+        pass
+
     def add_source_files(self, target, files):
-        paths = list(self.directory.glob(files)) if isinstance(files, str) else [self.directory / f for f in files]
+        paths = (
+            list(self.directory.glob(files))
+            if isinstance(files, str)
+            else [ROOT / f[1:] if f.startswith("#") else self.directory / f for f in files]
+        )
         # A misspelled non-wildcard string must not silently disappear through Glob.
         if isinstance(files, str) and "*" not in files:
             assert paths, files
@@ -95,6 +106,16 @@ def collect(script, library_type, **drivers):
 
 
 class LibGodotSources(unittest.TestCase):
+    def test_gl_context_platform_options(self):
+        for platform in ("web", "macos", "windows", "linuxbsd", "android", "ios"):
+            with self.subTest(platform=platform):
+                env = collect("drivers/gl_context/SCsub", "executable", platform=platform)
+                self.assertNotIn("angle_libs", env)
+                self.assertEqual(len(env.sources), len(set(env.sources)))
+                self.assertEqual(any(p.name == "gl.c" for p in env.sources), platform not in ("web", "ios"))
+        env = collect("drivers/gl_context/SCsub", "static_library", platform="ios", angle_libs="unused")
+        self.assertIn(ROOT / "thirdparty/glad/gl.c", env.sources)
+
     def test_rendering_sources(self):
         # 4.7 builds the RD sources regardless of enabled backend drivers.
         # Do not supply the 4.8-only rendering_device environment key.

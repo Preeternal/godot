@@ -1048,6 +1048,14 @@ void TileMap::navmesh_parse_init() {
 	}
 }
 
+void TileMap::navmesh_parse_finish() {
+	if (_navmesh_source_geometry_parser.is_valid() && NavigationServer2D::get_singleton()) {
+		NavigationServer2D::get_singleton()->free_rid(_navmesh_source_geometry_parser);
+	}
+	_navmesh_source_geometry_parser = RID();
+	_navmesh_source_geometry_parsing_callback = Callable();
+}
+
 void TileMap::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node) {
 	TileMap *nb_tilemap = Object::cast_to<TileMap>(p_node);
 

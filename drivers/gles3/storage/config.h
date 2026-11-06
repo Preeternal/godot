@@ -116,6 +116,10 @@ public:
 	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC eglFramebufferTextureMultisampleMultiviewOVR = nullptr;
 	PFNEGLIMAGETARGETTEXTURE2DOESPROC eglEGLImageTargetTexture2DOES = nullptr;
 
+// Android resolves these extensions per Config, including when GLAD supplies
+// aliases for the same entry points. Keep the Android dispatch path authoritative.
+#undef glFramebufferTextureMultiviewOVR
+#undef glTexStorage3DMultisample
 #define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
 #define glTexStorage3DMultisample GLES3::Config::get_singleton()->eglTexStorage3DMultisample
 #define glFramebufferTexture2DMultisampleEXT GLES3::Config::get_singleton()->eglFramebufferTexture2DMultisampleEXT

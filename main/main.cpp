@@ -202,6 +202,8 @@ static XRServer *xr_server = nullptr;
 #endif // XR_DISABLED
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
+// Library instances can be destroyed before setup2, or after a failed start.
+static ModuleInitializationLevel initialized_module_level = MODULE_INITIALIZATION_LEVEL_CORE;
 
 // Drivers
 
@@ -405,26 +407,36 @@ void initialize_physics() {
 
 void finalize_physics() {
 #ifndef PHYSICS_3D_DISABLED
-	physics_server_3d->finish();
-	memdelete(physics_server_3d);
+	if (physics_server_3d) {
+		physics_server_3d->finish();
+		memdelete(physics_server_3d);
+		physics_server_3d = nullptr;
+	}
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
-	physics_server_2d->finish();
-	memdelete(physics_server_2d);
+	if (physics_server_2d) {
+		physics_server_2d->finish();
+		memdelete(physics_server_2d);
+		physics_server_2d = nullptr;
+	}
 #endif // PHYSICS_2D_DISABLED
 }
 
 void finalize_display() {
 	if (rendering_server) {
 		rendering_server->finish();
+		memdelete(rendering_server);
+		rendering_server = nullptr;
 	}
-	memdelete(rendering_server);
-	rendering_server = nullptr;
-	memdelete(display_server);
-	display_server = nullptr;
-	memdelete(accessibility_server);
-	accessibility_server = nullptr;
+	if (display_server) {
+		memdelete(display_server);
+		display_server = nullptr;
+	}
+	if (accessibility_server) {
+		memdelete(accessibility_server);
+		accessibility_server = nullptr;
+	}
 }
 
 void initialize_theme_db() {
@@ -764,6 +776,7 @@ Error Main::test_setup() {
 	engine = memnew(Engine);
 
 	register_core_types();
+	register_core_server_types();
 	register_core_driver_types();
 	register_core_platform_apis();
 
@@ -853,7 +866,6 @@ Error Main::test_setup() {
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 #endif
-	register_core_platform_apis();
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
@@ -939,11 +951,9 @@ void Main::test_cleanup() {
 	}
 
 #ifndef NAVIGATION_2D_DISABLED
-	NavigationServer2DManager::finalize_server();
 	NavigationServer2DManager::finalize_server_manager();
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
-	NavigationServer3DManager::finalize_server();
 	NavigationServer3DManager::finalize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
 
@@ -1081,6 +1091,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
 	GodotProfileZone("setup");
+	bool core_modules_initialized = false;
 	Thread::make_main_thread();
 	set_current_thread_safe_for_nodes(true);
 
@@ -2325,6 +2336,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	core_modules_initialized = true;
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
 	if (!editor) {
@@ -3042,9 +3054,15 @@ error:
 	unregister_core_platform_apis();
 	unregister_core_driver_types();
 	unregister_core_extensions();
+	if (core_modules_initialized) {
+		uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	}
+	AudioDriverManager::reset();
+	DisplayServer::reset();
 
 	if (engine) {
 		memdelete(engine);
+		engine = nullptr;
 	}
 
 	unregister_core_types();
@@ -3288,6 +3306,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 		GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+		initialized_module_level = MODULE_INITIALIZATION_LEVEL_SERVERS;
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Modules and Extensions");
 	}
@@ -3857,6 +3876,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 		GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
+		initialized_module_level = MODULE_INITIALIZATION_LEVEL_SCENE;
 
 		OS::get_singleton()->benchmark_end_measure("Scene", "Modules and Extensions");
 
@@ -3890,6 +3910,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 		GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
+		initialized_module_level = MODULE_INITIALIZATION_LEVEL_EDITOR;
 
 		OS::get_singleton()->benchmark_end_measure("Editor", "Modules and Extensions");
 	}
@@ -5336,7 +5357,9 @@ void Main::cleanup(bool p_force) {
 
 	WorkerThreadPool::get_singleton()->exit_languages_threads();
 
-	ScriptServer::finish_languages();
+	if (initialized_module_level >= MODULE_INITIALIZATION_LEVEL_SCENE) {
+		ScriptServer::finish_languages();
+	}
 
 	if (rendering_server) {
 		// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
@@ -5355,38 +5378,50 @@ void Main::cleanup(bool p_force) {
 #endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
-	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
-	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
-	unregister_editor_types();
+	if (initialized_module_level >= MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
+		uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
+		unregister_editor_types();
+	}
 
 #endif
 
 	ImageLoader::cleanup();
 
-	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
-	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
-
-	unregister_platform_apis();
+	if (initialized_module_level >= MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
+		uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
+		unregister_platform_apis();
+		unregister_driver_types();
+		unregister_scene_types();
+		finalize_theme_db();
+	}
 	unregister_core_platform_apis();
-	unregister_driver_types();
-	unregister_scene_types();
-
-	finalize_theme_db();
 
 // Before deinitializing server extensions, finalize servers which may be loaded as extensions.
 #ifndef NAVIGATION_2D_DISABLED
-	NavigationServer2DManager::finalize_server();
-	NavigationServer2DManager::finalize_server_manager();
+	if (NavigationServer2DManager::get_singleton()) {
+		if (NavigationServer2D::get_singleton()) {
+			NavigationServer2DManager::finalize_server();
+		}
+		NavigationServer2DManager::finalize_server_manager();
+	}
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
-	NavigationServer3DManager::finalize_server();
-	NavigationServer3DManager::finalize_server_manager();
+	if (NavigationServer3DManager::get_singleton()) {
+		if (NavigationServer3D::get_singleton()) {
+			NavigationServer3DManager::finalize_server();
+		}
+		NavigationServer3DManager::finalize_server_manager();
+	}
 #endif // NAVIGATION_3D_DISABLED
 	finalize_physics();
 
-	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
-	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
-	unregister_server_types();
+	if (initialized_module_level >= MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+		uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+		unregister_server_types();
+	}
 	unregister_core_server_types();
 
 	EngineDebugger::deinitialize();
@@ -5400,12 +5435,14 @@ void Main::cleanup(bool p_force) {
 
 	if (audio_server) {
 		audio_server->finish();
+		memdelete(audio_server);
+		audio_server = nullptr;
 	}
-	memdelete(audio_server);
-	audio_server = nullptr;
 
-	memdelete(camera_server);
-	camera_server = nullptr;
+	if (camera_server) {
+		memdelete(camera_server);
+		camera_server = nullptr;
+	}
 
 	OS::get_singleton()->finalize();
 
@@ -5479,6 +5516,27 @@ void Main::cleanup(bool p_force) {
 		engine = nullptr;
 	}
 
+	ResourceSaver::set_save_callback(nullptr);
+	ResourceLoader::set_load_callback(nullptr);
+#ifdef TOOLS_ENABLED
+	GDExtensionEditorPlugins::clear_extension_classes();
+	EditorPlugins::reset();
+#endif
+	MovieWriter::reset();
+	AudioDriverManager::reset();
+	DisplayServer::reset();
+	SceneTree::reset_idle_callbacks();
+	display_driver = String();
+	tablet_driver = String();
+	text_driver = String();
+	accessibility_driver_name = String();
+	locale = String();
+	log_file = String();
+#ifdef TOOLS_ENABLED
+	debug_server_uri = String();
+	validate_extension_api_file = String();
+	forwardable_cli_arguments.clear();
+#endif
 	unregister_core_types();
 
 	OS::get_singleton()->benchmark_end_measure("Shutdown", "Main::Cleanup");
@@ -5512,6 +5570,13 @@ void Main::cleanup(bool p_force) {
 	xr_server = nullptr;
 #endif // XR_DISABLED
 	_start_success = false;
+	initialized_module_level = MODULE_INITIALIZATION_LEVEL_CORE;
+#ifndef PHYSICS_3D_DISABLED
+	physics_server_3d_manager = nullptr;
+#endif
+#ifndef PHYSICS_2D_DISABLED
+	physics_server_2d_manager = nullptr;
+#endif
 
 	text_driver_idx = -1;
 	audio_driver_idx = -1;

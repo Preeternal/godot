@@ -98,6 +98,7 @@ void GodotNavigationServer2D::sync() {
 }
 
 void GodotNavigationServer2D::finish() {
+	flush_queries();
 #ifdef CLIPPER2_ENABLED
 	if (navmesh_generator_2d) {
 		navmesh_generator_2d->finish();

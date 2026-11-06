@@ -3,19 +3,15 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-if env["platform"] in ["macos", "windows", "linuxbsd", "android"] or env["angle_libs"] != "":
+if env["platform"] in ["macos", "windows", "linuxbsd", "android"] or env.get("angle_libs", "") != "":
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = ["gl.c", "egl.c"]
-
-    #    if not env.get("angle_libs"):
-    #        thirdparty_sources += ["egl.c"]
 
     env.Prepend(CPPPATH=[thirdparty_dir])
 
     env.Append(CPPDEFINES=["GLAD_ENABLED"])
     if env["platform"] == "linuxbsd":
-        thirdparty_sources += ["egl.c"]
         env.Append(CPPDEFINES=["EGL_ENABLED", "GLAD_GLES2"])
     else:
         if env["angle"]:

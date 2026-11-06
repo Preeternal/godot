@@ -36,10 +36,10 @@ void RenderingNativeSurfaceVulkan::_bind_methods() {
 	ClassDB::bind_static_method("RenderingNativeSurfaceVulkan", D_METHOD("create", "vulkan_surface"), &RenderingNativeSurfaceVulkan::create_api);
 }
 
-Ref<RenderingNativeSurfaceVulkan> RenderingNativeSurfaceVulkan::create_api(GDExtensionPtr<const void> p_vulkan_surface) {
+Ref<RenderingNativeSurfaceVulkan> RenderingNativeSurfaceVulkan::create_api(uint64_t p_vulkan_surface) {
 	Ref<RenderingNativeSurfaceVulkan> result = nullptr;
 #ifdef VULKAN_ENABLED
-	result = RenderingNativeSurfaceVulkan::create((VkSurfaceKHR)p_vulkan_surface.operator const void *());
+	result = RenderingNativeSurfaceVulkan::create((VkSurfaceKHR)p_vulkan_surface);
 #endif
 	return result;
 }

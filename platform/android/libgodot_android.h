@@ -30,10 +30,6 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #if __has_include("core/extension/libgodot.h")
 #include "core/extension/libgodot.h"
 #elif __has_include("libgodot.h")
@@ -43,6 +39,10 @@ extern "C" {
 #endif
 
 #include <jni.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @name libgodot_create_godot_instance_android
