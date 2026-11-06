@@ -94,7 +94,7 @@ struct LigatureSet
     slow:
       for (unsigned int i = 0; i < num_ligs; i++)
       {
-	const auto &lig = this+ligature.arrayZ[i];
+	const auto &lig = this+ligature.as_array ()[i];
 	if (lig.apply (c)) return_trace (true);
       }
       return_trace (false);
@@ -132,7 +132,7 @@ struct LigatureSet
     bool unsafe_to_concat = false;
     for (unsigned int i = 0; i < num_ligs; i++)
     {
-      const auto &lig = this+ligature.arrayZ[i];
+      const auto &lig = this+ligature.as_array ()[i];
       if (unlikely (lig.component.lenP1 <= 1) ||
 	  lig.component.arrayZ[0] == second)
       {

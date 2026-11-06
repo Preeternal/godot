@@ -483,7 +483,7 @@ Files extracted from upstream source:
 
 Godot patches:
 
-- `patches/0001-coverage-range-array-view.patch`: Access CoverageFormat2 ranges through the existing length-checked array view instead of indexing the fixed-size trailing member.
+- `patches/0001-coverage-range-array-view.patch`: Use pointer and length-checked array views for variable-length OpenType data, retaining the layout and sanitizer checks.
 
 
 ## icu4c

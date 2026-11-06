@@ -1,29 +1,90 @@
+# Apply with git apply --unidiff-zero against the pinned HarfBuzz source.
 diff --git a/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh b/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh
 index 19895cabb8..5bdd05518a 100644
 --- a/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh
 +++ b/thirdparty/harfbuzz/src/OT/Layout/Common/CoverageFormat2.hh
-@@ -104,10 +104,10 @@ struct CoverageFormat2_4
- 	  unsorted = true;
- 
-         range++;
+@@ -107,2 +107,2 @@ struct CoverageFormat2_4
 -        rangeRecord.arrayZ[range].first = g;
 -        rangeRecord.arrayZ[range].value = count;
 +        rangeRecord.as_array ()[range].first = g;
 +        rangeRecord.as_array ()[range].value = count;
-       }
+@@ -110 +110 @@ struct CoverageFormat2_4
 -      rangeRecord.arrayZ[range].last = g;
 +      rangeRecord.as_array ()[range].last = g;
-       last = g;
-       count++;
-     }
-@@ -194,8 +194,8 @@ struct CoverageFormat2_4
-         if (__more__ ())
-         {
-           unsigned int old = coverage;
+@@ -197,2 +197,2 @@ struct CoverageFormat2_4
 -          j = c->rangeRecord.arrayZ[i].first;
 -          coverage = c->rangeRecord.arrayZ[i].value;
 +          j = c->rangeRecord.as_array ()[i].first;
 +          coverage = c->rangeRecord.as_array ()[i].value;
-           if (unlikely (coverage != old + 1))
-           {
-             /* Broken table. Skip. Important to avoid DoS.
+diff --git a/thirdparty/harfbuzz/src/OT/Layout/GSUB/LigatureSet.hh b/thirdparty/harfbuzz/src/OT/Layout/GSUB/LigatureSet.hh
+index e398794756..2905e1bbac 100644
+--- a/thirdparty/harfbuzz/src/OT/Layout/GSUB/LigatureSet.hh
++++ b/thirdparty/harfbuzz/src/OT/Layout/GSUB/LigatureSet.hh
+@@ -97 +97 @@ struct LigatureSet
+-	const auto &lig = this+ligature.arrayZ[i];
++	const auto &lig = this+ligature.as_array ()[i];
+@@ -135 +135 @@ struct LigatureSet
+-      const auto &lig = this+ligature.arrayZ[i];
++      const auto &lig = this+ligature.as_array ()[i];
+diff --git a/thirdparty/harfbuzz/src/hb-open-type.hh b/thirdparty/harfbuzz/src/hb-open-type.hh
+index 792101664f..d010d458db 100644
+--- a/thirdparty/harfbuzz/src/hb-open-type.hh
++++ b/thirdparty/harfbuzz/src/hb-open-type.hh
+@@ -559 +559,2 @@ struct UnsizedArrayOf
+-    return arrayZ[i];
++    const Type *items = arrayZ;
++    return items[i];
+@@ -563 +564,2 @@ struct UnsizedArrayOf
+-    return arrayZ[i];
++    Type *items = arrayZ;
++    return items[i];
+@@ -607 +609 @@ struct UnsizedArrayOf
+-      arrayZ[i] = *items;
++      as_array (count)[i] = *items;
+@@ -628 +630 @@ struct UnsizedArrayOf
+-      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
++      if (unlikely (!c->dispatch (as_array (count)[i], std::forward<Ts> (ds)...)))
+@@ -718 +720 @@ struct ArrayOf
+-    return arrayZ[i];
++    return as_array ()[i];
+@@ -725 +727 @@ struct ArrayOf
+-    return arrayZ[i];
++    return as_array ()[i];
+@@ -748 +750 @@ struct ArrayOf
+-  const Type *end () const { return arrayZ + len; }
++  const Type *end () const { return as_array ().end (); }
+@@ -783 +785 @@ struct ArrayOf
+-      arrayZ[i] = *items;
++      as_array ()[i] = *items;
+@@ -796 +798 @@ struct ArrayOf
+-    return_trace (&arrayZ[len - 1]);
++    return_trace (&as_array ()[len - 1]);
+@@ -819 +821 @@ struct ArrayOf
+-      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
++      if (unlikely (!c->dispatch (as_array ()[i], std::forward<Ts> (ds)...)))
+@@ -858 +860 @@ struct List16OfOffsetTo : ArrayOf<OffsetTo<Type, OffsetType>, HBUINT16>
+-    return this+this->arrayZ[i];
++    return this+this->as_array ()[i];
+@@ -865 +867 @@ struct List16OfOffsetTo : ArrayOf<OffsetTo<Type, OffsetType>, HBUINT16>
+-    return this+this->arrayZ[i];
++    return this+this->as_array ()[i];
+@@ -875 +877 @@ struct List16OfOffsetTo : ArrayOf<OffsetTo<Type, OffsetType>, HBUINT16>
+-      out->arrayZ[i].serialize_subset (c, this->arrayZ[i], this, out);
++      out->as_array ()[i].serialize_subset (c, this->as_array ()[i], this, out);
+@@ -1057 +1059 @@ struct SortedArrayOf : ArrayOf<Type, LenType>
+-  const Type *end () const { return this->arrayZ + this->len; }
++  const Type *end () const { return as_array ().end (); }
+diff --git a/thirdparty/harfbuzz/src/hb-ot-layout-gsubgpos.hh b/thirdparty/harfbuzz/src/hb-ot-layout-gsubgpos.hh
+index df029ae79c..87e9f4c3de 100644
+--- a/thirdparty/harfbuzz/src/hb-ot-layout-gsubgpos.hh
++++ b/thirdparty/harfbuzz/src/hb-ot-layout-gsubgpos.hh
+@@ -4552,0 +4553 @@ struct hb_ot_layout_lookup_accelerator_t
++    auto subtable_array = hb_array (thiz->subtables, count);
+@@ -4555 +4556 @@ struct hb_ot_layout_lookup_accelerator_t
+-       thiz->subtables[i].apply_cached_func = thiz->subtables[i].apply_func;
++       subtable_array[i].apply_cached_func = subtable_array[i].apply_func;
+@@ -4564,2 +4565,2 @@ struct hb_ot_layout_lookup_accelerator_t
+-    for (unsigned i = 0; i < count; i++)
+-      hb_free (subtables[i].external_cache);
++    for (auto &subtable : hb_array (subtables, count))
++      hb_free (subtable.external_cache);

@@ -556,11 +556,13 @@ struct UnsizedArrayOf
 
   const Type& operator [] (unsigned int i) const
   {
-    return arrayZ[i];
+    const Type *items = arrayZ;
+    return items[i];
   }
   Type& operator [] (unsigned int i)
   {
-    return arrayZ[i];
+    Type *items = arrayZ;
+    return items[i];
   }
 
   static size_t get_size (unsigned int len)
@@ -604,7 +606,7 @@ struct UnsizedArrayOf
     /* TODO Umm. Just exhaust the iterator instead?  Being extra
      * cautious right now.. */
     for (unsigned i = 0; i < count; i++, ++items)
-      arrayZ[i] = *items;
+      as_array (count)[i] = *items;
     return_trace (true);
   }
 
@@ -625,7 +627,7 @@ struct UnsizedArrayOf
     if (!sizeof... (Ts) && hb_is_trivially_copyable(Type)) return_trace (true);
     hb_barrier ();
     for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
+      if (unlikely (!c->dispatch (as_array (count)[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
     return_trace (true);
   }
@@ -715,14 +717,14 @@ struct ArrayOf
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= len)) return Null (Type);
     hb_barrier ();
-    return arrayZ[i];
+    return as_array ()[i];
   }
   Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= len)) return Crap (Type);
     hb_barrier ();
-    return arrayZ[i];
+    return as_array ()[i];
   }
 
   size_t get_size () const
@@ -745,7 +747,7 @@ struct ArrayOf
 
   /* Faster range-based for loop. */
   const Type *begin () const { return arrayZ; }
-  const Type *end () const { return arrayZ + len; }
+  const Type *end () const { return as_array ().end (); }
 
   template <typename T>
   Type &lsearch (const T &x, Type &not_found = Crap (Type))
@@ -780,7 +782,7 @@ struct ArrayOf
     /* TODO Umm. Just exhaust the iterator instead?  Being extra
      * cautious right now.. */
     for (unsigned i = 0; i < count; i++, ++items)
-      arrayZ[i] = *items;
+      as_array ()[i] = *items;
     return_trace (true);
   }
 
@@ -793,7 +795,7 @@ struct ArrayOf
       len--;
       return_trace (nullptr);
     }
-    return_trace (&arrayZ[len - 1]);
+    return_trace (&as_array ()[len - 1]);
   }
 
   ArrayOf* copy (hb_serialize_context_t *c) const
@@ -816,7 +818,7 @@ struct ArrayOf
     hb_barrier ();
     unsigned int count = len;
     for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
+      if (unlikely (!c->dispatch (as_array ()[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
     return_trace (true);
   }
@@ -855,14 +857,14 @@ struct List16OfOffsetTo : ArrayOf<OffsetTo<Type, OffsetType>, HBUINT16>
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= this->len)) return Null (Type);
     hb_barrier ();
-    return this+this->arrayZ[i];
+    return this+this->as_array ()[i];
   }
   const Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= this->len)) return Crap (Type);
     hb_barrier ();
-    return this+this->arrayZ[i];
+    return this+this->as_array ()[i];
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -872,7 +874,7 @@ struct List16OfOffsetTo : ArrayOf<OffsetTo<Type, OffsetType>, HBUINT16>
     if (unlikely (!out)) return_trace (false);
     unsigned int count = this->len;
     for (unsigned int i = 0; i < count; i++)
-      out->arrayZ[i].serialize_subset (c, this->arrayZ[i], this, out);
+      out->as_array ()[i].serialize_subset (c, this->as_array ()[i], this, out);
     return_trace (true);
   }
 
@@ -1054,7 +1056,7 @@ struct SortedArrayOf : ArrayOf<Type, LenType>
 
   /* Faster range-based for loop. */
   const Type *begin () const { return this->arrayZ; }
-  const Type *end () const { return this->arrayZ + this->len; }
+  const Type *end () const { return as_array ().end (); }
 
   bool serialize (hb_serialize_context_t *c, unsigned int items_len)
   {

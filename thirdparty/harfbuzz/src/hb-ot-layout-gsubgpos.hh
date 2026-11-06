@@ -4550,9 +4550,10 @@ struct hb_ot_layout_lookup_accelerator_t
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
     thiz->subtable_cache_user_idx = c_accelerate_subtables.subtable_cache_user_idx;
 
+    auto subtable_array = hb_array (thiz->subtables, count);
     for (unsigned i = 0; i < count; i++)
       if (i != thiz->subtable_cache_user_idx)
-       thiz->subtables[i].apply_cached_func = thiz->subtables[i].apply_func;
+       subtable_array[i].apply_cached_func = subtable_array[i].apply_func;
 #endif
 
     return thiz;
@@ -4561,8 +4562,8 @@ struct hb_ot_layout_lookup_accelerator_t
   void fini ()
   {
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
-    for (unsigned i = 0; i < count; i++)
-      hb_free (subtables[i].external_cache);
+    for (auto &subtable : hb_array (subtables, count))
+      hb_free (subtable.external_cache);
 #endif
   }
 
