@@ -194,7 +194,87 @@ TEST_CASE("[Translation] Plural rules parsing") {
 	}
 }
 
+TEST_CASE("[OptimizedTranslation] Read multiple elements from a serialized bucket") {
+	Ref<OptimizedTranslation> translation = memnew(OptimizedTranslation);
+	// Existing wire format: one hash slot, then a two-word header and two
+	// four-word elements. Both lookups must traverse the same bucket.
+	PackedInt32Array hash_table = { 0 };
+	PackedInt32Array bucket_table = {
+		2,
+		1,
+		-1519114947,
+		0,
+		5,
+		5, // hash(1, "first"), "alpha".
+		1698387609,
+		5,
+		4,
+		4, // hash(1, "second"), "beta".
+	};
+	PackedByteArray strings = { 'a', 'l', 'p', 'h', 'a', 'b', 'e', 't', 'a' };
+	translation->set("hash_table", hash_table);
+	translation->set("bucket_table", bucket_table);
+	translation->set("strings", strings);
+	CHECK(translation->get_message("first") == "alpha");
+	CHECK(translation->get_message("second") == "beta");
+	CHECK(translation->get_message("missing") == StringName());
+	CHECK(translation->get_plural_message("second", "seconds", 2) == "beta");
+	const Vector<String> messages = translation->get_translated_message_list();
+	REQUIRE_EQ(messages.size(), 2);
+	if (messages.size() == 2) {
+		CHECK_EQ(messages[0], "alpha");
+		CHECK_EQ(messages[1], "beta");
+	}
+	CHECK(PackedInt32Array(translation->get("bucket_table")) == bucket_table);
+
+	Ref<OptimizedTranslation> empty = memnew(OptimizedTranslation);
+	CHECK(empty->get_message("missing") == StringName());
+	CHECK(empty->get_translated_message_list().is_empty());
+}
+
 #ifdef TOOLS_ENABLED
+TEST_CASE("[OptimizedTranslation] Generated colliding buckets survive property roundtrip") {
+	Ref<Translation> source = memnew(Translation);
+	Vector<String> keys;
+	Vector<String> expected;
+	for (int i = 0; i < 64; i++) {
+		keys.push_back("key_" + itos(i));
+		expected.push_back(i % 2 == 0 ? "A long repeated translation. A long repeated translation. " + itos(i) : String::chr(0xe000 + i));
+		source->add_message(keys[i], expected[i]);
+	}
+	Ref<OptimizedTranslation> generated = memnew(OptimizedTranslation);
+	REQUIRE(generated->generate(source));
+	const PackedInt32Array table = generated->get("bucket_table");
+	bool multiple_elements = false;
+	bool compressed = false;
+	bool uncompressed = false;
+	for (int offset = 0; offset < table.size();) {
+		const int count = table[offset];
+		multiple_elements |= count > 1;
+		for (int i = 0; i < count; i++) {
+			const int element = offset + 2 + i * 4;
+			compressed |= table[element + 2] < table[element + 3];
+			uncompressed |= table[element + 2] == table[element + 3];
+		}
+		offset += 2 + count * 4;
+	}
+	CHECK(multiple_elements);
+	CHECK(compressed);
+	CHECK(uncompressed);
+
+	Ref<OptimizedTranslation> loaded = memnew(OptimizedTranslation);
+	for (const char *property : { "hash_table", "bucket_table", "strings" }) {
+		loaded->set(property, generated->get(property));
+		CHECK(loaded->get(property) == generated->get(property));
+	}
+	const Vector<String> messages = loaded->get_translated_message_list();
+	CHECK_EQ(messages.size(), expected.size());
+	for (int i = 0; i < keys.size(); i++) {
+		CHECK(loaded->get_message(keys[i]) == expected[i]);
+		CHECK(messages.has(expected[i]));
+	}
+}
+
 TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") {
 	Ref<Translation> translation = memnew(Translation);
 	translation->set_locale("fr");

@@ -243,12 +243,9 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 	CharString str = p_src_text.operator String().utf8();
 	uint32_t h = hash(0, str.get_data());
 
-	const int *htr = hash_table.ptr();
-	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	const int *btr = bucket_table.ptr();
-	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	const uint8_t *sr = strings.ptr();
-	const char *sptr = (const char *)&sr[0];
+	const uint32_t *htptr = reinterpret_cast<const uint32_t *>(hash_table.ptr());
+	const uint32_t *btptr = reinterpret_cast<const uint32_t *>(bucket_table.ptr());
+	const char *sptr = reinterpret_cast<const char *>(strings.ptr());
 
 	uint32_t p = htptr[h % htsize];
 
@@ -256,14 +253,16 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName(); //nothing
 	}
 
-	const Bucket &bucket = *(const Bucket *)&btptr[p];
-
-	h = hash(bucket.func, str.get_data());
+	const int bucket_size = bucket_table[p];
+	h = hash(btptr[p + 1], str.get_data());
 
 	int idx = -1;
+	BucketElement elem;
 
-	for (int i = 0; i < bucket.size; i++) {
-		if (bucket.elem[i].key == h) {
+	for (int i = 0; i < bucket_size; i++) {
+		// Read from the backing array, not past a fixed-size struct member.
+		memcpy(&elem, &btptr[p + 2 + i * 4], sizeof(elem));
+		if (elem.key == h) {
 			idx = i;
 			break;
 		}
@@ -273,12 +272,12 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName();
 	}
 
-	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
-		return String::utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
+	if (elem.comp_size == elem.uncomp_size) {
+		return String::utf8(&sptr[elem.str_offset], elem.uncomp_size);
 	} else {
 		CharString uncomp;
-		uncomp.resize_uninitialized(bucket.elem[idx].uncomp_size + 1);
-		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
+		uncomp.resize_uninitialized(elem.uncomp_size + 1);
+		smaz_decompress(&sptr[elem.str_offset], elem.comp_size, uncomp.ptrw(), elem.uncomp_size);
 		return String::utf8(uncomp.get_data());
 	}
 }
@@ -286,25 +285,24 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 Vector<String> OptimizedTranslation::get_translated_message_list() const {
 	Vector<String> msgs;
 
-	const int *htr = hash_table.ptr();
-	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	const int *btr = bucket_table.ptr();
-	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	const uint8_t *sr = strings.ptr();
-	const char *sptr = (const char *)&sr[0];
+	const uint32_t *htptr = reinterpret_cast<const uint32_t *>(hash_table.ptr());
+	const uint32_t *btptr = reinterpret_cast<const uint32_t *>(bucket_table.ptr());
+	const char *sptr = reinterpret_cast<const char *>(strings.ptr());
 
 	for (int i = 0; i < hash_table.size(); i++) {
 		uint32_t p = htptr[i];
 		if (p != 0xFFFFFFFF) {
-			const Bucket &bucket = *(const Bucket *)&btptr[p];
-			for (int j = 0; j < bucket.size; j++) {
-				if (bucket.elem[j].comp_size == bucket.elem[j].uncomp_size) {
-					String rstr = String::utf8(&sptr[bucket.elem[j].str_offset], bucket.elem[j].uncomp_size);
+			const int bucket_size = bucket_table[p];
+			for (int j = 0; j < bucket_size; j++) {
+				BucketElement elem;
+				memcpy(&elem, &btptr[p + 2 + j * 4], sizeof(elem));
+				if (elem.comp_size == elem.uncomp_size) {
+					String rstr = String::utf8(&sptr[elem.str_offset], elem.uncomp_size);
 					msgs.push_back(rstr);
 				} else {
 					CharString uncomp;
-					uncomp.resize_uninitialized(bucket.elem[j].uncomp_size + 1);
-					smaz_decompress(&sptr[bucket.elem[j].str_offset], bucket.elem[j].comp_size, uncomp.ptrw(), bucket.elem[j].uncomp_size);
+					uncomp.resize_uninitialized(elem.uncomp_size + 1);
+					smaz_decompress(&sptr[elem.str_offset], elem.comp_size, uncomp.ptrw(), elem.uncomp_size);
 					String rstr = String::utf8(uncomp.get_data());
 					msgs.push_back(rstr);
 				}
