@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-// Standalone macOS/POSIX host for the public LibGodot C ABI.
+// Standalone macOS host for the public LibGodot C ABI, with Metal/Vulkan binds.
 // Build separately from the engine. The .cc suffix excludes this executable
 // from the engine's recursive .cpp unit-test discovery.
 #include "core/extension/libgodot.h"
@@ -132,6 +132,10 @@ int main(int p_argc, char **p_argv) {
 		check(result, "iteration before start");
 		ptrcall(start, instance, nullptr, &result);
 		check(result, "start instance");
+		method("create", 4233771684, "RenderingNativeSurfaceApple");
+		method("create", 1056151817, "RenderingNativeSurfaceVulkan");
+		method("set_native_surface", 2894024005, "Window");
+		method("detach_native_surface", 3067735520, "DisplayServerEmbedded");
 		method("set_boot_image", 3759744527, "RenderingServer");
 		method("set_boot_image", 2244367877, "RenderingServer");
 		method("set_boot_image_with_stretch", 1104470771, "RenderingServer");

@@ -43,6 +43,18 @@ jobs:
     if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
     uses: ./.github/workflows/macos_builds.yml
 
+  libgodot-build:
+    name: LibGodot libraries
+    needs: static-checks
+    if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
+    uses: ./.github/workflows/libgodot_builds.yml
+
+  libgodot-contract:
+    name: LibGodot contract
+    needs: [static-checks, macos-build, libgodot-build]
+    if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
+    uses: ./.github/workflows/libgodot_contract.yml
+
   windows-build:
     name: 🏁 Windows
     needs: static-checks

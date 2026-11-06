@@ -1,0 +1,83 @@
+name: LibGodot API and Lifecycle
+on:
+  workflow_call:
+
+jobs:
+  contract:
+    name: macOS C ABI lifecycle and API contract
+    runs-on: macos-26
+    timeout-minutes: 15
+    env:
+      RESULTS: bin/libgodot-ci/contract
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download editor from this run
+        uses: actions/download-artifact@v8
+        with:
+          name: macos-editor
+          path: bin/ci-editor
+
+      - name: Download library from this run
+        uses: actions/download-artifact@v8
+        with:
+          name: libgodot-macos-arm64
+          path: bin/ci-library
+
+      - name: Verify library provenance and exports
+        shell: bash
+        run: |
+          mkdir -p "$RESULTS/api"
+          python3 tests/libgodot/check_library.py --verify \
+            --platform macos --target template_debug --library-type shared_library \
+            --revision "$GITHUB_SHA" \
+            --library bin/ci-library/libgodot.macos.template_debug.arm64.dylib \
+            --symbols bin/ci-library/symbols.txt --manifest bin/ci-library/manifest.json
+
+      - name: Generate and validate API contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          EDITOR="$GITHUB_WORKSPACE/bin/ci-editor/godot.macos.editor.universal"
+          chmod +x "$EDITOR"
+          cd "$RESULTS/api"
+          "$EDITOR" --headless --dump-extension-api --dump-gdextension-interface \
+            --dump-gdextension-interface-json 2>&1 | tee api-dump.log
+          python3 "$GITHUB_WORKSPACE/tests/libgodot/check_api.py" extension_api.json \
+            --output api-validation.json
+
+      - name: Import lifecycle fixture and compile public C ABI host
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin/ci-editor/godot.macos.editor.universal --headless --editor \
+            --path tests/libgodot/project --import 2>&1 | tee "$RESULTS/fixture-import.log"
+          # A fresh checkout has no *.gen.h. Compile against the dumped interface,
+          # staged with the public header, rather than a cached engine-generated file.
+          mkdir -p "$RESULTS/include/core/extension"
+          cp core/extension/libgodot.h "$RESULTS/include/core/extension/"
+          cp "$RESULTS/api/gdextension_interface.h" \
+            "$RESULTS/include/core/extension/gdextension_interface.gen.h"
+          printf '#include "core/extension/libgodot.h"\n' | \
+            clang -arch arm64 -std=c11 -Wall -Wextra -Werror -I"$RESULTS/include" -x c -fsyntax-only -
+          clang++ -arch arm64 -std=c++17 -Wall -Wextra -Werror -I"$RESULTS/include" \
+            tests/libgodot/lifecycle_host.cc -o "$RESULTS/lifecycle_host"
+
+      - name: Run failure cleanup and recreate smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RESULTS/lifecycle_host" \
+            "$GITHUB_WORKSPACE/bin/ci-library/libgodot.macos.template_debug.arm64.dylib" \
+            "$GITHUB_WORKSPACE/tests/libgodot/project" 2>&1 | tee "$RESULTS/lifecycle.log"
+
+      - name: Upload contract diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: libgodot-contract
+          path: ${{ env.RESULTS }}/
+          retention-days: 7
+          if-no-files-found: warn

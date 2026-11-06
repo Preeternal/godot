@@ -1,0 +1,134 @@
+name: LibGodot Library Builds
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Android arm64 shared library
+            platform: android
+            runner: ubuntu-24.04
+            target: template_release
+            library-type: shared_library
+            cache-name: libgodot-android-arm64-shared-release-v1
+            flags: vulkan=yes swappy=yes
+            library: platform/android/java/lib/libs/release/arm64-v8a/libgodot_android.so
+          - name: iOS arm64 static library
+            platform: ios
+            runner: macos-26
+            target: template_release
+            library-type: static_library
+            cache-name: libgodot-ios-arm64-static-release-v1
+            flags: vulkan=no metal=yes
+            library: bin/libgodot.ios.template_release.arm64.a
+          - name: macOS arm64 shared library
+            platform: macos
+            runner: macos-26
+            target: template_debug
+            library-type: shared_library
+            cache-name: libgodot-macos-arm64-shared-debug-v1
+            flags: vulkan=yes use_volk=yes metal=yes accesskit=yes angle=no
+            library: bin/libgodot.macos.template_debug.arm64.dylib
+
+    env:
+      BUILD_NAME: gh
+      RESULTS: bin/libgodot-ci/${{ matrix.platform }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Restore library build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Set up Java 17
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Download Swappy
+        if: matrix.platform == 'android'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS"
+          python misc/scripts/install_swappy_android.py 2>&1 | tee "$RESULTS/dependencies.log"
+
+      - name: Download AccessKit
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS"
+          python misc/scripts/install_accesskit.py 2>&1 | tee "$RESULTS/dependencies.log"
+
+      - name: Build library without editor sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS"
+          # Match the upstream template build's check for editor dependencies.
+          rm -rf editor
+          scons platform=${{ matrix.platform }} arch=arm64 target=${{ matrix.target }} \
+            library_type=${{ matrix.library-type }} dev_mode=yes debug_symbols=no \
+            module_text_server_fb_enabled=yes ${{ matrix.flags }} \
+            "cache_path=$GITHUB_WORKSPACE/.scons_cache/" redirect_build_objects=no \
+            2>&1 | tee "$RESULTS/build.log"
+
+      - name: Check architecture and public C exports
+        shell: bash
+        env:
+          LIBRARY: ${{ matrix.library }}
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.platform }}" = android ]; then
+            NDK_VERSION="$(python -c "import runpy; print(runpy.run_path('platform/android/detect.py')['get_ndk_version']())")"
+            NDK_BIN="$ANDROID_HOME/ndk/$NDK_VERSION/toolchains/llvm/prebuilt/linux-x86_64/bin"
+            "$NDK_BIN/llvm-readelf" --file-header "$LIBRARY" | tee "$RESULTS/architecture.txt"
+            grep -q 'AArch64' "$RESULTS/architecture.txt"
+            "$NDK_BIN/llvm-nm" --dynamic --defined-only "$LIBRARY" > "$RESULTS/symbols.txt"
+            "$NDK_BIN/clang++" --version > "$RESULTS/toolchain.txt"
+          else
+            lipo -archs "$LIBRARY" | tee "$RESULTS/architecture.txt"
+            test "$(cat "$RESULTS/architecture.txt")" = arm64
+            nm -gU "$LIBRARY" > "$RESULTS/symbols.txt"
+            xcodebuild -version > "$RESULTS/toolchain.txt"
+          fi
+          python tests/libgodot/check_library.py \
+            --platform "${{ matrix.platform }}" --target "${{ matrix.target }}" \
+            --library-type "${{ matrix.library-type }}" --revision "$GITHUB_SHA" \
+            --library "$LIBRARY" --symbols "$RESULTS/symbols.txt" \
+            --manifest "$RESULTS/manifest.json"
+          cp "$LIBRARY" "$RESULTS/"
+
+      - name: Save library build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Upload library and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: libgodot-${{ matrix.platform }}-arm64
+          path: ${{ env.RESULTS }}/
+          retention-days: 7
+          if-no-files-found: warn

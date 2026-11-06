@@ -40,7 +40,6 @@
 
 #include "core/extension/godot_instance.h"
 #include "core/io/libgodot_logger.h"
-#include "editor/plugins/editor_plugin.h"
 #include "main/main.h"
 #include "servers/movie_writer/movie_writer.h"
 

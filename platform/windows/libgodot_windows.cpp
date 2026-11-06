@@ -34,7 +34,6 @@
 #include "core/extension/libgodot.h"
 #include "core/io/libgodot_logger.h"
 #include "core/string/string_name.h"
-#include "editor/plugins/editor_plugin.h"
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"

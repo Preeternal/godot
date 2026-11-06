@@ -76,6 +76,10 @@ repos:
       - id: check-jsonschema
         files: ^core/extension/gdextension_interface\.json$
         args: ["--schemafile", "core/extension/gdextension_interface.schema.json"]
+      - id: check-jsonschema
+        name: validate-libgodot-workflows
+        files: ^\.github/workflows/(runner|libgodot_builds|libgodot_contract)\.yml$
+        args: ["--builtin-schema", "vendor.github-workflows"]
 
   - repo: local
     hooks:
@@ -225,6 +229,14 @@ repos:
 #
 # Start of downstream pre-commit hooks.
 #
+# Validate the contract gate even when only its workflow or fixture changes.
+      - id: validate-libgodot-ci
+        name: validate-libgodot-ci
+        language: python
+        entry: python tests/python_build/validate_libgodot_ci.py
+        pass_filenames: false
+        files: ^(tests/libgodot/|tests/python_build/validate_libgodot_ci\.py$|\.github/workflows/(runner|libgodot_builds|libgodot_contract)\.yml$)
+
 # This is still the "repo: local" scope, so new local hooks can be defined directly at this indentation:
 #     - id: new-local-hook
 # To add external repo hooks, bring the indentation back to:

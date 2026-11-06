@@ -1,0 +1,290 @@
+{
+  "_source": "Excerpt from the G1 macOS API dump d67c9dc997372e036b2ee9b69de63324dd754a3592380b06084881d826a0b20d",
+  "header": {
+    "version_major": 4,
+    "version_minor": 7,
+    "version_patch": 2,
+    "version_status": "stable",
+    "version_build": "custom_build",
+    "version_full_name": "Godot Engine v4.7.2.stable.custom_build",
+    "precision": "single"
+  },
+  "classes": [
+    {
+      "name": "DisplayServerEmbedded",
+      "methods": [
+        {
+          "name": "set_native_surface",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": true,
+          "is_virtual": false,
+          "hash": 2894024005,
+          "arguments": [
+            {
+              "name": "native_surface",
+              "type": "RenderingNativeSurface"
+            }
+          ]
+        },
+        {
+          "name": "detach_native_surface",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 3067735520,
+          "return_value": {
+            "type": "bool"
+          },
+          "arguments": [
+            {
+              "name": "window_id",
+              "type": "int",
+              "meta": "int64"
+            }
+          ]
+        }
+      ],
+      "inherits": "DisplayServer",
+      "is_refcounted": false
+    },
+    {
+      "name": "GodotInstance",
+      "methods": [
+        {
+          "name": "start",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 2240911060,
+          "return_value": {
+            "type": "bool"
+          }
+        },
+        {
+          "name": "is_started",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 2240911060,
+          "return_value": {
+            "type": "bool"
+          }
+        },
+        {
+          "name": "iteration",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 2240911060,
+          "return_value": {
+            "type": "bool"
+          }
+        },
+        {
+          "name": "stop",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 3218959716
+        },
+        {
+          "name": "focus_in",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 3218959716
+        },
+        {
+          "name": "focus_out",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 3218959716
+        },
+        {
+          "name": "pause",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 3218959716
+        },
+        {
+          "name": "resume",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 3218959716
+        }
+      ],
+      "inherits": "Object",
+      "is_refcounted": false
+    },
+    {
+      "name": "RenderingNativeSurface",
+      "methods": [],
+      "inherits": "RefCounted",
+      "is_refcounted": true
+    },
+    {
+      "name": "RenderingNativeSurfaceApple",
+      "methods": [
+        {
+          "name": "create",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": true,
+          "is_virtual": false,
+          "hash": 4233771684,
+          "return_value": {
+            "type": "RenderingNativeSurfaceApple"
+          },
+          "arguments": [
+            {
+              "name": "layer",
+              "type": "int",
+              "meta": "uint64"
+            }
+          ]
+        }
+      ],
+      "inherits": "RenderingNativeSurface",
+      "is_refcounted": true
+    },
+    {
+      "name": "RenderingNativeSurfaceVulkan",
+      "methods": [
+        {
+          "name": "create",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": true,
+          "is_virtual": false,
+          "hash": 1056151817,
+          "return_value": {
+            "type": "RenderingNativeSurfaceVulkan"
+          },
+          "arguments": [
+            {
+              "name": "vulkan_surface",
+              "type": "int",
+              "meta": "uint64"
+            }
+          ]
+        }
+      ],
+      "inherits": "RenderingNativeSurface",
+      "is_refcounted": true
+    },
+    {
+      "name": "RenderingServer",
+      "methods": [
+        {
+          "name": "set_boot_image_with_stretch",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 34726427,
+          "hash_compatibility": [
+            1104470771
+          ],
+          "arguments": [
+            {
+              "name": "image",
+              "type": "Image"
+            },
+            {
+              "name": "color",
+              "type": "Color"
+            },
+            {
+              "name": "stretch_mode",
+              "type": "enum::RenderingServer.SplashStretchMode"
+            },
+            {
+              "name": "screen",
+              "type": "int",
+              "meta": "int32",
+              "default_value": "0"
+            },
+            {
+              "name": "use_filter",
+              "type": "bool",
+              "default_value": "true"
+            }
+          ]
+        },
+        {
+          "name": "set_boot_image",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 389236347,
+          "hash_compatibility": [
+            3759744527,
+            2244367877
+          ],
+          "arguments": [
+            {
+              "name": "image",
+              "type": "Image"
+            },
+            {
+              "name": "color",
+              "type": "Color"
+            },
+            {
+              "name": "scale",
+              "type": "bool"
+            },
+            {
+              "name": "screen",
+              "type": "int",
+              "meta": "int32",
+              "default_value": "0"
+            },
+            {
+              "name": "use_filter",
+              "type": "bool",
+              "default_value": "true"
+            }
+          ]
+        }
+      ],
+      "inherits": "Object",
+      "is_refcounted": false
+    },
+    {
+      "name": "Window",
+      "methods": [
+        {
+          "name": "set_native_surface",
+          "is_const": false,
+          "is_vararg": false,
+          "is_static": false,
+          "is_virtual": false,
+          "hash": 2894024005,
+          "arguments": [
+            {
+              "name": "native_surface",
+              "type": "RenderingNativeSurface"
+            }
+          ]
+        }
+      ],
+      "inherits": "Viewport",
+      "is_refcounted": false
+    }
+  ]
+}
