@@ -22,6 +22,7 @@ class SourceEnvironment(dict[str, Any]):
             LIBSUFFIX=".a",
             LIBS=[],
             generate_bundle=False,
+            builtin_sdl=True,
         )
         if angle_libs is not None:
             self["angle_libs"] = angle_libs
@@ -106,6 +107,14 @@ def collect(script, library_type, **drivers):
 
 
 class LibGodotSources(unittest.TestCase):
+    def test_sdl_device_helpers_selected_for_apple_mobile(self):
+        helper = ROOT / "thirdparty/sdl/core/ios/SDL_iosdevice.m"
+        for platform in ("ios", "visionos", "macos", "android", "windows", "linuxbsd"):
+            with self.subTest(platform=platform):
+                env = collect("drivers/sdl/SCsub", "static_library", platform=platform)
+                self.assertEqual(helper in env.sources, platform in ("ios", "visionos"))
+                self.assertEqual(len(env.sources), len(set(env.sources)))
+
     def test_gl_context_platform_options(self):
         for platform in ("web", "macos", "windows", "linuxbsd", "android", "ios"):
             with self.subTest(platform=platform):

@@ -9,7 +9,13 @@ from typing import Any
 
 
 def library_manifest(
-    library: Path, symbols: Path, platform: str, revision: str, target: str, library_type: str
+    library: Path,
+    symbols: Path,
+    platform: str,
+    revision: str,
+    target: str,
+    library_type: str,
+    require_ios_sdl: bool = False,
 ) -> dict[str, Any]:
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError("Expected a full Git commit SHA")
@@ -24,11 +30,17 @@ def library_manifest(
             defined.add(parts[-1].removeprefix("_"))
     if missing := required - defined:
         raise ValueError(f"Missing defined C exports: {sorted(missing)}")
+    sdl_symbols = {"SDL_IsTablet", "SDL_IsTV", "SDL_IsIPad", "SDL_IsAppleTV"}
+    if require_ios_sdl:
+        if platform != "ios":
+            raise ValueError("The iOS SDL check requires an iOS library")
+        if missing := sdl_symbols - defined:
+            raise ValueError(f"Missing defined iOS SDL symbols: {sorted(missing)}")
     digest = hashlib.sha256()
     with library.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
-    return {
+    result = {
         "revision": revision,
         "platform": platform,
         "architecture": "arm64",  # Checked with lipo/readelf by the build job.
@@ -39,6 +51,9 @@ def library_manifest(
         "sha256": digest.hexdigest(),
         "exports": sorted(required),
     }
+    if require_ios_sdl:
+        result["ios_sdl_symbols"] = sorted(sdl_symbols)
+    return result
 
 
 def main() -> None:
@@ -51,10 +66,17 @@ def main() -> None:
     parser.add_argument("--symbols", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--require-ios-sdl", action="store_true")
     args = parser.parse_args()
     try:
         result = library_manifest(
-            args.library, args.symbols, args.platform, args.revision, args.target, args.library_type
+            args.library,
+            args.symbols,
+            args.platform,
+            args.revision,
+            args.target,
+            args.library_type,
+            args.require_ios_sdl,
         )
         if args.verify:
             if json.loads(args.manifest.read_text()) != result:

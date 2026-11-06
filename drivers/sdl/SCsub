@@ -146,7 +146,6 @@ if env["builtin_sdl"]:
     elif env["platform"] == "macos":
         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_MACOS"])
         thirdparty_sources += [
-            "core/ios/SDL_iosdevice.m",
             "core/unix/SDL_appid.c",
             "core/unix/SDL_poll.c",
             "haptic/darwin/SDL_syshaptic.c",
@@ -196,6 +195,7 @@ if env["builtin_sdl"]:
             env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_VISIONOS"])
 
         thirdparty_sources += [
+            "core/ios/SDL_iosdevice.m",
             "core/unix/SDL_appid.c",
             "core/unix/SDL_poll.c",
             "haptic/dummy/SDL_syshaptic.c",

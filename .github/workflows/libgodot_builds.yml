@@ -26,7 +26,7 @@ jobs:
             target: template_release
             library-type: static_library
             cache-name: libgodot-ios-arm64-static-release-v1
-            flags: vulkan=no metal=yes
+            flags: vulkan=no metal=yes sdl=yes builtin_sdl=yes
             library: bin/libgodot.ios.template_release.arm64.a
           - name: macOS arm64 shared library
             platform: macos
@@ -98,6 +98,7 @@ jobs:
           LIBRARY: ${{ matrix.library }}
         run: |
           set -euo pipefail
+          manifest_args=(--manifest "$RESULTS/manifest.json")
           if [ "${{ matrix.platform }}" = android ]; then
             NDK_VERSION="$(python -c "import runpy; print(runpy.run_path('platform/android/detect.py')['get_ndk_version']())")"
             NDK_BIN="$ANDROID_HOME/ndk/$NDK_VERSION/toolchains/llvm/prebuilt/linux-x86_64/bin"
@@ -110,12 +111,15 @@ jobs:
             test "$(cat "$RESULTS/architecture.txt")" = arm64
             nm -gU "$LIBRARY" > "$RESULTS/symbols.txt"
             xcodebuild -version > "$RESULTS/toolchain.txt"
+            if [ "${{ matrix.platform }}" = ios ]; then
+              manifest_args+=(--require-ios-sdl)
+            fi
           fi
           python tests/libgodot/check_library.py \
             --platform "${{ matrix.platform }}" --target "${{ matrix.target }}" \
             --library-type "${{ matrix.library-type }}" --revision "$GITHUB_SHA" \
             --library "$LIBRARY" --symbols "$RESULTS/symbols.txt" \
-            --manifest "$RESULTS/manifest.json"
+            "${manifest_args[@]}"
           cp "$LIBRARY" "$RESULTS/"
 
       - name: Save library build cache

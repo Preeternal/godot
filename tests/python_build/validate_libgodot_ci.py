@@ -85,6 +85,27 @@ class LibraryContract(unittest.TestCase):
         result = library_manifest(self.library, self.symbols, "macos", "a" * 40, "template_debug", "shared_library")
         self.assertIn("libgodot_destroy_godot_instance", result["exports"])
 
+    def test_ios_archive_requires_device_helper_definitions(self):
+        exports = self.symbols.read_text()
+        sdl = {"SDL_IsTablet", "SDL_IsTV", "SDL_IsIPad", "SDL_IsAppleTV"}
+        for missing in (sdl, {"SDL_IsIPad"}, {"SDL_IsAppleTV"}):
+            with self.subTest(missing=missing):
+                self.symbols.write_text(
+                    exports
+                    + "".join(f"0000 T _{name}\n" for name in sorted(sdl - missing))
+                    + "".join(f"         U _{name}\n" for name in sorted(missing))
+                )
+                with self.assertRaisesRegex(ValueError, "Missing defined iOS SDL symbols"):
+                    library_manifest(
+                        self.library, self.symbols, "ios", "a" * 40, "template_release", "static_library", True
+                    )
+        self.symbols.write_text(exports + "".join(f"0000 T _{name}\n" for name in sorted(sdl)))
+        result = library_manifest(
+            self.library, self.symbols, "ios", "a" * 40, "template_release", "static_library", True
+        )
+        self.assertEqual(result["ios_sdl_symbols"], sorted(sdl))
+        self.assertEqual(result["exports"], ["libgodot_create_godot_instance", "libgodot_destroy_godot_instance"])
+
     def test_undefined_or_mangled_exports_fail(self):
         for symbol in ("U _libgodot_create_godot_instance", "T __Z_libgodot_create_godot_instance"):
             with self.subTest(symbol=symbol):
