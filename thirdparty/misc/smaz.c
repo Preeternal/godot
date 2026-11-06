@@ -99,9 +99,9 @@ int smaz_compress(const char *in, int inlen, char *out, int outlen) {
         char *flush = NULL;
         char *slot;
 
-        h1 = h2 = in[0]<<3;
-        if (inlen > 1) h2 += in[1];
-        if (inlen > 2) h3 = h2^in[2];
+        h1 = h2 = (unsigned int)in[0]<<3;
+        if (inlen > 1) h2 += (unsigned int)in[1];
+        if (inlen > 2) h3 = h2^(unsigned int)in[2];
         if (j > inlen) j = inlen;
 
         /* Try to lookup substrings into the hash table, starting from the

@@ -257,7 +257,7 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 	h = hash(btptr[p + 1], str.get_data());
 
 	int idx = -1;
-	BucketElement elem;
+	BucketElement elem = {};
 
 	for (int i = 0; i < bucket_size; i++) {
 		// Read from the backing array, not past a fixed-size struct member.

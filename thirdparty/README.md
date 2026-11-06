@@ -860,6 +860,7 @@ Collection of single-file libraries used in Godot components.
   * Modifications: License included in header.
   * Patches:
     - `smaz-0001-write-string-warning.patch` ([GH-8572](https://github.com/godotengine/godot/pull/8572))
+    - `smaz-0002-unsigned-hash.patch`: Use explicit unsigned arithmetic for input-byte hashing, avoiding signed left-shift UB without changing compression output.
 - `smolv.{cpp,h}`
   * Upstream: https://github.com/aras-p/smol-v
   * Version: git (9dd54c379ac29fa148cb1b829bb939ba7381d8f4, 2024)
