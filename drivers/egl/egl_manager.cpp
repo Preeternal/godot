@@ -432,6 +432,23 @@ Error EGLManager::window_create(DisplayServerEnums::WindowID p_window_id, void *
 	return OK;
 }
 
+Size2i EGLManager::window_get_size(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_INDEX_V(p_window_id, (int)windows.size(), Size2i());
+	const GLWindow &glwindow = windows[p_window_id];
+	ERR_FAIL_COND_V(!glwindow.initialized || glwindow.egl_surface == EGL_NO_SURFACE, Size2i());
+	ERR_FAIL_INDEX_V(glwindow.gldisplay_id, (int)displays.size(), Size2i());
+	const GLDisplay &gldisplay = displays[glwindow.gldisplay_id];
+
+	EGLint width = 0;
+	EGLint height = 0;
+	if (!eglQuerySurface(gldisplay.egl_display, glwindow.egl_surface, EGL_WIDTH, &width) ||
+			!eglQuerySurface(gldisplay.egl_display, glwindow.egl_surface, EGL_HEIGHT, &height)) {
+		EGLint error = eglGetError();
+		ERR_FAIL_V_MSG(Size2i(), vformat("Unable to query EGL surface size: 0x%x (%s)", error, getEGLErrorMessage(error)));
+	}
+	return Size2i(width, height);
+}
+
 void EGLManager::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	ERR_FAIL_INDEX(p_window_id, (int)windows.size());
 

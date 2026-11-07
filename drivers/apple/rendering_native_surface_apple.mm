@@ -231,11 +231,8 @@ Error GLManagerApple::initialize(void *p_native_display) {
 Size2i GLManagerApple::window_get_size(DisplayServerEnums::WindowID p_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_id), Size2i());
 	const WindowData &gles_data = windows[p_id];
-#if defined(MACOS_ENABLED)
+	// Drawable storage is measured in pixels; CALayer bounds are in points.
 	return Size2i(gles_data.backingWidth, gles_data.backingHeight);
-#else
-	return Size2i(gles_data.layer.bounds.size.width, gles_data.layer.bounds.size.height);
-#endif
 }
 
 void GLManagerApple::window_resize(DisplayServerEnums::WindowID p_id, int p_width, int p_height) {

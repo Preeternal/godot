@@ -104,7 +104,7 @@ public:
 
 	int window_get_render_target(DisplayServerEnums::WindowID p_window_id) const override { return 0; }
 	int window_get_color_texture(DisplayServerEnums::WindowID p_id) const override { return 0; }
-	Size2i window_get_size(DisplayServerEnums::WindowID p_window_id) const override { return Size2i(); }
+	Size2i window_get_size(DisplayServerEnums::WindowID p_window_id) const override;
 
 	void release_current() override;
 	void swap_buffers() override;

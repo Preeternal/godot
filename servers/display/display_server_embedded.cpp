@@ -845,7 +845,13 @@ uint64_t DisplayServerEmbedded::get_native_window_id(DisplayServerEnums::WindowI
 }
 
 bool DisplayServerEmbedded::is_rendering_flipped() const {
+#if defined(IOS_ENABLED) || defined(ANDROID_ENABLED)
+	// Native mobile GL drawables need the usual render-target-to-screen Y flip.
+	// Leave texture-backed desktop and ANGLE presentation paths unchanged.
+	return rendering_driver == "opengl3";
+#else
 	return false;
+#endif
 }
 
 DisplayServerEnums::WindowID DisplayServerEmbedded::get_native_surface_window_id(Ref<RenderingNativeSurface> p_native_surface) const {

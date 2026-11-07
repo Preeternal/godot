@@ -14,6 +14,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Check mobile drawable query and orientation contracts
+        shell: bash
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 python3 tests/libgodot/check_drawables.py -v
+
       - name: Download editor from this run
         uses: actions/download-artifact@v8
         with:
