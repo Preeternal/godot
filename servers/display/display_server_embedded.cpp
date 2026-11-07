@@ -30,18 +30,10 @@
 
 #include "display_server_embedded.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/file_access_pack.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/rendering_server.h"
-
-#ifdef RD_ENABLED
-#if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/godot_vulkan.h"
-#endif // VULKAN_ENABLED
-#endif // RD_ENABLED
 
 Ref<RenderingNativeSurface> DisplayServerEmbedded::native_surface = nullptr;
 
