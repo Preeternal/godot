@@ -138,7 +138,9 @@ static GDTViewController *mainViewController = nil;
 	}
 #endif
 
-	[[AVAudioSession sharedInstance] setCategory:category withOptions:options error:nil];
+	[[AVAudioSession sharedInstance] setCategory:category
+									 withOptions:options
+										   error:nil];
 
 	return YES;
 }
