@@ -874,6 +874,7 @@ Rect2 OS_AppleEmbedded::calculate_boot_screen_rect(const Size2 &p_window_size, c
 }
 
 bool OS_AppleEmbedded::request_permission(const String &p_name) {
+#ifndef AUDIO_INPUT_DISABLED
 	if (p_name == "appleembedded.permission.AUDIO_RECORD") {
 		if (@available(iOS 17.0, *)) {
 			AVAudioApplicationRecordPermission permission = [AVAudioApplication sharedInstance].recordPermission;
@@ -891,17 +892,20 @@ bool OS_AppleEmbedded::request_permission(const String &p_name) {
 			}
 		}
 	}
+#endif
 	return false;
 }
 
 Vector<String> OS_AppleEmbedded::get_granted_permissions() const {
 	Vector<String> ret;
 
+#ifndef AUDIO_INPUT_DISABLED
 	if (@available(iOS 17.0, *)) {
 		if ([AVAudioApplication sharedInstance].recordPermission == AVAudioApplicationRecordPermissionGranted) {
 			ret.push_back("appleembedded.permission.AUDIO_RECORD");
 		}
 	}
+#endif
 	return ret;
 }
 #endif // APPLE_EMBEDDED_ENABLED

@@ -183,6 +183,14 @@ ext.getGodotLibraryVersion = { ->
 }
 
 ext.getGodotPublishVersion = { ->
+    // Packaging a fork release must not inherit the upstream SNAPSHOT heuristic.
+    String publishVersion = System.getenv('GODOT_PUBLISH_VERSION')
+    if (publishVersion != null && !publishVersion.empty) {
+        if (!(publishVersion ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/)) {
+            throw new GradleException("Invalid GODOT_PUBLISH_VERSION")
+        }
+        return publishVersion
+    }
     List<String> requiredKeys = ["major", "minor", "patch", "status"]
     String versionName = ""
     int versionCode = 1

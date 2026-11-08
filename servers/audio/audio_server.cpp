@@ -1871,6 +1871,11 @@ void AudioServer::set_input_device(const String &p_name) {
 }
 
 Error AudioServer::set_input_device_active(bool p_is_active) {
+#ifdef AUDIO_INPUT_DISABLED
+	if (p_is_active) {
+		return ERR_UNAVAILABLE;
+	}
+#endif
 	if (input_device_active == p_is_active) {
 		return OK;
 	}

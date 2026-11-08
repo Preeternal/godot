@@ -180,6 +180,7 @@ void AudioDriverOpenSL::start() {
 	active = true;
 }
 
+#ifndef AUDIO_INPUT_DISABLED
 void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf queueItf) {
 	for (int i = 0; i < rec_buffer.size(); i++) {
 		int32_t sample = rec_buffer[i] << 16;
@@ -299,6 +300,18 @@ Error AudioDriverOpenSL::input_stop() {
 	return OK;
 }
 
+#else
+
+Error AudioDriverOpenSL::input_start() {
+	return ERR_UNAVAILABLE;
+}
+
+Error AudioDriverOpenSL::input_stop() {
+	return OK;
+}
+
+#endif
+
 int AudioDriverOpenSL::get_mix_rate() const {
 	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
 }
@@ -320,6 +333,7 @@ void AudioDriverOpenSL::unlock() {
 }
 
 void AudioDriverOpenSL::finish() {
+#ifndef AUDIO_INPUT_DISABLED
 	if (recordItf) {
 		(*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
 		recordItf = nullptr;
@@ -328,6 +342,7 @@ void AudioDriverOpenSL::finish() {
 		(*recorder)->Destroy(recorder);
 		recorder = nullptr;
 	}
+#endif
 	if (playItf) {
 		(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
 		playItf = nullptr;

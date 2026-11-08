@@ -51,21 +51,23 @@ class AudioDriverOpenSL : public AudioDriver {
 	int32_t *mixdown_buffer = nullptr;
 	int last_free = 0;
 
-	Vector<int16_t> rec_buffer;
-
 	SLPlayItf playItf = nullptr;
-	SLRecordItf recordItf = nullptr;
 	SLObjectItf sl = nullptr;
 	SLEngineItf EngineItf = nullptr;
 	SLObjectItf OutputMix = nullptr;
 	SLObjectItf player = nullptr;
-	SLObjectItf recorder = nullptr;
 	SLAndroidSimpleBufferQueueItf bufferQueueItf = nullptr;
-	SLAndroidSimpleBufferQueueItf recordBufferQueueItf = nullptr;
 	SLDataSource audioSource;
 	SLDataFormat_PCM pcm;
 	SLDataSink audioSink;
 	SLDataLocator_OutputMix locator_outputmix;
+
+#ifndef AUDIO_INPUT_DISABLED
+	Vector<int16_t> rec_buffer;
+	SLRecordItf recordItf = nullptr;
+	SLObjectItf recorder = nullptr;
+	SLAndroidSimpleBufferQueueItf recordBufferQueueItf = nullptr;
+#endif
 
 	static AudioDriverOpenSL *s_ad;
 
@@ -76,6 +78,7 @@ class AudioDriverOpenSL : public AudioDriver {
 			SLAndroidSimpleBufferQueueItf queueItf,
 			void *pContext);
 
+#ifndef AUDIO_INPUT_DISABLED
 	void _record_buffer_callback(
 			SLAndroidSimpleBufferQueueItf queueItf);
 
@@ -84,6 +87,7 @@ class AudioDriverOpenSL : public AudioDriver {
 			void *pContext);
 
 	Error init_input_device();
+#endif
 
 public:
 	virtual const char *get_name() const override {

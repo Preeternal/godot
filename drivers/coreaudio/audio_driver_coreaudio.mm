@@ -181,9 +181,11 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitInitialize(audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
+#ifndef AUDIO_INPUT_DISABLED
 	if (GLOBAL_GET("audio/driver/enable_input")) {
 		return init_input_device();
 	}
+#endif
 	return OK;
 }
 
@@ -228,6 +230,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	return 0;
 }
 
+#ifndef AUDIO_INPUT_DISABLED
 OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
 		const AudioTimeStamp *inTimeStamp,
@@ -269,6 +272,8 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	return result;
 }
 
+#endif
+
 void AudioDriverCoreAudio::start() {
 	if (!active && audio_unit != nullptr) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
@@ -296,7 +301,11 @@ int AudioDriverCoreAudio::get_mix_rate() const {
 }
 
 int AudioDriverCoreAudio::get_input_mix_rate() const {
+#ifdef AUDIO_INPUT_DISABLED
+	return mix_rate;
+#else
 	return capture_mix_rate;
+#endif
 }
 
 AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
@@ -316,7 +325,9 @@ bool AudioDriverCoreAudio::try_lock() {
 }
 
 void AudioDriverCoreAudio::finish() {
+#ifndef AUDIO_INPUT_DISABLED
 	finish_input_device();
+#endif
 
 	if (audio_unit) {
 		OSStatus result;
@@ -366,6 +377,7 @@ void AudioDriverCoreAudio::finish() {
 	}
 }
 
+#ifndef AUDIO_INPUT_DISABLED
 Error AudioDriverCoreAudio::init_input_device() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
@@ -544,6 +556,18 @@ Error AudioDriverCoreAudio::input_stop() {
 
 	return OK;
 }
+
+#else
+
+Error AudioDriverCoreAudio::input_start() {
+	return ERR_UNAVAILABLE;
+}
+
+Error AudioDriverCoreAudio::input_stop() {
+	return OK;
+}
+
+#endif
 
 #ifdef MACOS_ENABLED
 

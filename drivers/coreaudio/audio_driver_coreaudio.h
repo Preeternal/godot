@@ -43,23 +43,26 @@
 
 class AudioDriverCoreAudio : public AudioDriver {
 	AudioComponentInstance audio_unit = nullptr;
-	AudioComponentInstance input_unit = nullptr;
 
 	bool active = false;
 	Mutex mutex;
 
 	String output_device_name = "Default";
-	String input_device_name = "Default";
 
 	int mix_rate = 0;
-	int capture_mix_rate = 0;
 	unsigned int channels = 2;
-	unsigned int capture_channels = 2;
 	unsigned int buffer_frames = 0;
-	unsigned int capture_buffer_frames = 0;
 
 	Vector<int32_t> samples_in;
+
+#ifndef AUDIO_INPUT_DISABLED
+	AudioComponentInstance input_unit = nullptr;
+	String input_device_name = "Default";
+	int capture_mix_rate = 0;
+	unsigned int capture_channels = 2;
+	unsigned int capture_buffer_frames = 0;
 	unsigned int buffer_size = 0;
+#endif
 
 #ifdef MACOS_ENABLED
 	PackedStringArray _get_device_list(bool capture = false);
@@ -80,6 +83,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
+#ifndef AUDIO_INPUT_DISABLED
 	static OSStatus input_callback(void *inRefCon,
 			AudioUnitRenderActionFlags *ioActionFlags,
 			const AudioTimeStamp *inTimeStamp,
@@ -88,6 +92,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 	Error init_input_device();
 	void finish_input_device();
+#endif
 
 public:
 	virtual const char *get_name() const override {

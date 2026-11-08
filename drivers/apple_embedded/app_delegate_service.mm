@@ -107,6 +107,7 @@ static GDTViewController *mainViewController = nil;
 		options |= AVAudioSessionCategoryOptionMixWithOthers;
 	}
 
+#ifndef AUDIO_INPUT_DISABLED
 	if (sessionCategorySetting == SESSION_CATEGORY_MULTI_ROUTE) {
 		category = AVAudioSessionCategoryMultiRoute;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAY_AND_RECORD) {
@@ -121,6 +122,21 @@ static GDTViewController *mainViewController = nil;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_SOLO_AMBIENT) {
 		category = AVAudioSessionCategorySoloAmbient;
 	}
+
+#else
+	// Record-capable project settings must not activate an input session.
+	switch (sessionCategorySetting) {
+		case SESSION_CATEGORY_PLAYBACK:
+		case SESSION_CATEGORY_PLAY_AND_RECORD:
+		case SESSION_CATEGORY_RECORD:
+		case SESSION_CATEGORY_MULTI_ROUTE:
+			category = AVAudioSessionCategoryPlayback;
+			break;
+		case SESSION_CATEGORY_SOLO_AMBIENT:
+			category = AVAudioSessionCategorySoloAmbient;
+			break;
+	}
+#endif
 
 	[[AVAudioSession sharedInstance] setCategory:category withOptions:options error:nil];
 
